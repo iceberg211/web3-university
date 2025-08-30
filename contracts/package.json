@@ -1,0 +1,29 @@
+{
+  "name": "@web3-university/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "hardhat compile",
+    "clean": "hardhat clean",
+    "deploy": "hardhat run scripts/deploy.ts --network localhost",
+    "node": "hardhat node",
+    "export-abi": "ts-node scripts/export-abi.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@types/node": "^24.3.0",
+    "dotenv": "^17.2.1",
+    "hardhat": "^2.26.3",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "ethers": "^6.15.0"
+  }
+}

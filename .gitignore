@@ -1,0 +1,13 @@
+node_modules
+.DS_Store
+dist
+build
+.env
+.env.local
+.env.*.local
+contracts/cache
+contracts/artifacts
+contracts/typechain-types
+web/.next
+web/out
+web/.vercel
