@@ -1,0 +1,14 @@
+[
+  {
+    "id": "seed-001",
+    "title": "某某课一",
+    "summary": "Web3入门课程",
+    "priceYD": "10"
+  },
+  {
+    "id": "seed-002",
+    "title": "某某课二",
+    "summary": "Solidity进阶",
+    "priceYD": "20"
+  }
+]
