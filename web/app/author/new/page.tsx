@@ -18,6 +18,7 @@ export default function NewCourse() {
   const [price, setPrice] = useState("10");
   const { address } = useAccount();
 
+  // 使用写合约
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const receipt = useWaitForTransactionReceipt({ hash });
 

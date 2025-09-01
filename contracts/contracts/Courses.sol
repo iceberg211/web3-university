@@ -18,10 +18,24 @@ contract Courses is Ownable {
     mapping(bytes32 => Course) public courses; // id => course
     mapping(bytes32 => mapping(address => bool)) public purchased; // id => user => bool
 
-    event CourseCreated(bytes32 indexed id, address indexed author, uint256 price);
-    event CoursePurchased(bytes32 indexed id, address indexed user, uint256 price, uint256 fee);
+    event CourseCreated(
+        bytes32 indexed id,
+        address indexed author,
+        uint256 price
+    );
+    event CoursePurchased(
+        bytes32 indexed id,
+        address indexed user,
+        uint256 price,
+        uint256 fee
+    );
 
-    constructor(IERC20 _yd, address _owner, address _feeRecipient, uint256 _feeBps) Ownable(_owner) {
+    constructor(
+        IERC20 _yd,
+        address _owner,
+        address _feeRecipient,
+        uint256 _feeBps
+    ) Ownable(_owner) {
         yd = _yd;
         feeRecipient = _feeRecipient;
         feeBps = _feeBps;
@@ -39,7 +53,10 @@ contract Courses is Ownable {
         feeBps = bps;
     }
 
-    function hasPurchased(bytes32 id, address user) external view returns (bool) {
+    function hasPurchased(
+        bytes32 id,
+        address user
+    ) external view returns (bool) {
         return purchased[id][user];
     }
 
@@ -51,9 +68,15 @@ contract Courses is Ownable {
         uint256 authorAmt = c.price - fee;
 
         // pull tokens
-        require(yd.transferFrom(msg.sender, c.author, authorAmt), "pay author failed");
+        require(
+            yd.transferFrom(msg.sender, c.author, authorAmt),
+            "pay author failed"
+        );
         if (fee > 0 && feeRecipient != address(0)) {
-            require(yd.transferFrom(msg.sender, feeRecipient, fee), "pay fee failed");
+            require(
+                yd.transferFrom(msg.sender, feeRecipient, fee),
+                "pay fee failed"
+            );
         }
 
         purchased[id][msg.sender] = true;
