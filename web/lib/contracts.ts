@@ -1,7 +1,6 @@
-import contracts from "../contracts/31337.json" assert { type: "json" };
-import addrsJson from "../contracts/abis.json" assert { type: "json" };
+import contracts from "../contracts/abis.json" assert { type: "json" };
+import addrsJson from "../contracts/addresses.json" assert { type: "json" };
 
 type Abi = readonly unknown[];
 export const abis = contracts as Record<string, Abi>;
-export const addresses = (addrsJson as { addresses: Record<string, string> })
-  .addresses;
+export const addresses = (addrsJson as { addresses: Record<string, string> }).addresses;

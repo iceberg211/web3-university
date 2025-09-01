@@ -6,8 +6,10 @@
     "build": "hardhat compile",
     "clean": "hardhat clean",
     "deploy": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
     "node": "hardhat node",
-    "export-abi": "ts-node scripts/export-abi.ts"
+    "export-abi": "ts-node scripts/export-abi.ts",
+    "sync-web": "ts-node scripts/sync-web.ts"
   },
   "keywords": [],
   "author": "",

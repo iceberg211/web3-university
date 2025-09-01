@@ -1,6 +1,6 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { loadCourses } from "@/lib/storage";
 import { useAccount, useReadContract } from "wagmi";
 import { abis, addresses } from "@/lib/contracts";
 import BuyButton from "@/components/buy-button";
@@ -9,7 +9,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CourseDetail() {
   const { id } = useParams<{ id: string }>();
-  const course = loadCourses().find((c) => c.id === id);
+  const [course, setCourse] = useState<{ id: string; title: string; summary: string; priceYD: string } | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    fetch(`/api/courses/${encodeURIComponent(id)}`)
+      .then(async (r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (mounted) setCourse(data);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
   const { address } = useAccount();
   const idHex = stringToHex(id) as `0x${string}`;
   const owned = useReadContract({

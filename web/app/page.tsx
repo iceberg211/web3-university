@@ -1,16 +1,27 @@
 import CourseCard from "@/components/course-card";
-import { loadCourses } from "@/lib/storage";
-import Seed from "@/components/seed";
+import { supabase } from "@/lib/supabase";
 import { Card, CardContent } from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import Link from "next/link";
 import { IconBook, IconShield, IconSparkles, IconZap } from "@/components/icons";
 
-export default function Home() {
-  const courses = typeof window !== "undefined" ? loadCourses() : [];
+export default async function Home() {
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id,title,summary,priceYD,created_at")
+    .order("created_at", { ascending: false });
+  if (error) {
+    // Render empty state on error to avoid crashing SSR
+    console.warn("Failed to load courses:", error.message);
+  }
+  const courses = (data || []).map((r) => ({
+    id: r.id,
+    title: r.title,
+    summary: r.summary,
+    priceYD: r.priceYD,
+  }));
   return (
     <div className="space-y-10">
-      <Seed />
       <section className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">链上课程，简单拥有</h1>

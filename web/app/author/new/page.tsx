@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { saveCourses, loadCourses } from "@/lib/storage";
 import { abis, addresses } from "@/lib/contracts";
 import {
   useWriteContract,
@@ -24,9 +23,12 @@ export default function NewCourse() {
 
   const create = () => {
     const id = crypto.randomUUID();
-    const stored = loadCourses();
-    stored.push({ id, title, summary, priceYD: price });
-    saveCourses(stored);
+    // Persist course in SQLite via API
+    fetch("/api/courses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, title, summary, priceYD: price }),
+    }).catch(() => {});
 
     const idHex = `0x${Buffer.from(id).toString("hex")}` as `0x${string}`;
     writeContract({
