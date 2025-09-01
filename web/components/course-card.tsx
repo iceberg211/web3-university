@@ -3,6 +3,8 @@ import { useAccount, useReadContract } from "wagmi";
 import { abis, addresses } from "@/lib/contracts";
 import { stringToHex } from "viem";
 import Link from "next/link";
+import Button from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CourseCard({ id, title, summary, priceYD }: { id: string; title: string; summary: string; priceYD: string }) {
   const { address } = useAccount();
@@ -16,15 +18,19 @@ export default function CourseCard({ id, title, summary, priceYD }: { id: string
   });
 
   return (
-    <div className="border rounded p-4 flex flex-col gap-2">
-      <div className="font-semibold">{title}</div>
-      <div className="text-sm text-gray-600">{summary}</div>
-      <div className="text-sm">价格: {priceYD} YD</div>
-      <div className="flex gap-2">
-        <Link href={`/course/${encodeURIComponent(id)}`} className="px-3 py-1 bg-blue-600 text-white rounded">
-          {owned.data ? "查看内容" : "购买"}
-        </Link>
-      </div>
-    </div>
+    <Card className="flex flex-col">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <p className="text-sm text-neutral-600 dark:text-neutral-300">{summary}</p>
+        <div className="text-sm">价格：{priceYD} YD</div>
+        <div>
+          <Link href={`/course/${encodeURIComponent(id)}`}>
+            <Button size="md">{owned.data ? "查看内容" : "购买"}</Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

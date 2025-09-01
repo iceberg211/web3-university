@@ -22,4 +22,3 @@ export function saveCourses(courses: StoredCourse[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(KEY, JSON.stringify(courses));
 }
-

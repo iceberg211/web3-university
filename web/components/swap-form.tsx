@@ -3,6 +3,10 @@ import { useState } from "react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther, parseUnits } from "viem";
 import { abis, addresses } from "@/lib/contracts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import Label from "@/components/ui/label";
+import Button from "@/components/ui/button";
 
 export default function SwapForm() {
   const [ethAmount, setEthAmount] = useState("0.01");
@@ -40,45 +44,32 @@ export default function SwapForm() {
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-md">
-      <div>
-        <label className="block text-sm">用 ETH 兑换 YD</label>
-        <div className="flex gap-2">
-          <input
-            className="border rounded px-2 py-1 flex-1"
-            value={ethAmount}
-            onChange={(e) => setEthAmount(e.target.value)}
-          />
-          <button
-            className="px-3 py-1 bg-blue-600 text-white rounded"
-            onClick={swap}
-            disabled={isPending}
-          >
-            确认兑换
-          </button>
+    <Card className="max-w-md">
+      <CardHeader>
+        <CardTitle>快速兑换</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-5">
+        <div className="space-y-2">
+          <Label>用 ETH 兑换 YD</Label>
+          <div className="flex gap-2">
+            <Input value={ethAmount} onChange={(e) => setEthAmount(e.target.value)} />
+            <Button onClick={swap} disabled={isPending}>确认兑换</Button>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <label className="block text-sm">用 YD 兑换 ETH</label>
-        <div className="flex gap-2">
-          <input
-            className="border rounded px-2 py-1 flex-1"
-            value={ydAmount}
-            onChange={(e) => setYdAmount(e.target.value)}
-          />
-          <button
-            className="px-3 py-1 bg-purple-600 text-white rounded"
-            onClick={approveAndSwapBack}
-            disabled={isPending}
-          >
-            Approve+兑换
-          </button>
+        <div className="space-y-2">
+          <Label>用 YD 兑换 ETH</Label>
+          <div className="flex gap-2">
+            <Input value={ydAmount} onChange={(e) => setYdAmount(e.target.value)} />
+            <Button variant="secondary" onClick={approveAndSwapBack} disabled={isPending}>授权并兑换</Button>
+          </div>
         </div>
-      </div>
-      {receipt.isLoading && <span>等待区块确认...</span>}
-      {receipt.isSuccess && <span>成功！</span>}
-      {error && <span className="text-red-600">{error.message}</span>}
-    </div>
+        <div className="text-sm">
+          {receipt.isLoading && <span className="muted">等待区块确认...</span>}
+          {receipt.isSuccess && <span>成功！</span>}
+          {error && <span className="text-red-600">{error.message}</span>}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

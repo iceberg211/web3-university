@@ -3,4 +3,5 @@ import addrsJson from "../../contracts/exports/31337.json" assert { type: "json"
 
 type Abi = readonly unknown[];
 export const abis = contracts as Record<string, Abi>;
-export const addresses = (addrsJson as { addresses: Record<string, string> }).addresses;
+export const addresses = (addrsJson as { addresses: Record<string, string> })
+  .addresses;

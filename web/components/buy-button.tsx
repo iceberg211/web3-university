@@ -2,6 +2,7 @@
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from "wagmi";
 import { abis, addresses } from "@/lib/contracts";
 import { parseUnits, stringToHex } from "viem";
+import Button from "@/components/ui/button";
 
 export default function BuyButton({ id, priceYD }: { id: string; priceYD: string }) {
   const { isConnected } = useAccount();
@@ -34,19 +35,19 @@ export default function BuyButton({ id, priceYD }: { id: string; priceYD: string
 
   if (!isConnected)
     return (
-      <button className="px-3 py-1 bg-black text-white rounded" onClick={() => connect({ connector: connectors[0] })}>
+      <Button onClick={() => connect({ connector: connectors[0] })}>
         连接钱包
-      </button>
+      </Button>
     );
 
   return (
     <div className="flex gap-2 items-center">
-      <button className="px-3 py-1 bg-yellow-500 text-black rounded" onClick={approve} disabled={isPending}>
-        Approve
-      </button>
-      <button className="px-3 py-1 bg-green-600 text-white rounded" onClick={buy} disabled={isPending}>
+      <Button variant="secondary" onClick={approve} disabled={isPending}>
+        授权
+      </Button>
+      <Button onClick={buy} disabled={isPending}>
         购买课程
-      </button>
+      </Button>
       {isPending && <span>等待签名...</span>}
       {receipt.isLoading && <span>交易确认中...</span>}
       {receipt.isSuccess && <span>已购买！</span>}

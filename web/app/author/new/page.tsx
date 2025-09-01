@@ -8,6 +8,10 @@ import {
   useAccount,
 } from "wagmi";
 import { parseUnits } from "viem";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Label from "@/components/ui/label";
+import { Input, Textarea } from "@/components/ui/input";
+import Button from "@/components/ui/button";
 
 export default function NewCourse() {
   const [title, setTitle] = useState("");
@@ -39,36 +43,32 @@ export default function NewCourse() {
   };
 
   return (
-    <div className="p-6 space-y-4 max-w-xl">
-      <h1 className="text-2xl font-bold">创建课程</h1>
-      <label className="block">课程标题</label>
-      <input
-        className="border rounded w-full px-2 py-1"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <label className="block">课程简介</label>
-      <textarea
-        className="border rounded w-full px-2 py-1"
-        value={summary}
-        onChange={(e) => setSummary(e.target.value)}
-      />
-      <label className="block">课程价格（YD）</label>
-      <input
-        className="border rounded w-full px-2 py-1"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-      />
-      <button
-        className="px-3 py-1 bg-green-600 text-white rounded"
-        onClick={create}
-        disabled={isPending}
-      >
-        创建课程
-      </button>
-      {receipt.isLoading && <p>链上写入中...</p>}
-      {receipt.isSuccess && <p>已创建！</p>}
-      {error && <p className="text-red-600">{error.message}</p>}
+    <div className="max-w-xl">
+      <Card>
+        <CardHeader>
+          <CardTitle>创建课程</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>课程标题</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>课程简介</Label>
+            <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>课程价格（YD）</Label>
+            <Input value={price} onChange={(e) => setPrice(e.target.value)} />
+          </div>
+          <div className="flex items-center gap-3">
+            <Button onClick={create} disabled={isPending}>创建课程</Button>
+            {receipt.isLoading && <p className="muted">链上写入中...</p>}
+            {receipt.isSuccess && <p>已创建！</p>}
+            {error && <p className="text-red-600">{error.message}</p>}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
