@@ -1,6 +1,6 @@
 import Link from "next/link";
 import WalletConnect from "@/components/wallet-connect";
-import { IconSwap, IconPlusCircle } from "@/components/icons";
+import { IconSwap, IconPlusCircle, IconUser } from "@/components/icons";
 
 export default function Navbar() {
   return (
@@ -13,6 +13,9 @@ export default function Navbar() {
           </Link>
           <Link href="/author/new" className="inline-flex items-center gap-2">
             <IconPlusCircle /> 作者平台
+          </Link>
+          <Link href="/me" className="inline-flex items-center gap-2">
+            <IconUser /> 个人中心
           </Link>
           <WalletConnect />
         </nav>

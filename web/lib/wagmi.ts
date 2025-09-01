@@ -10,7 +10,7 @@ export const config = getDefaultConfig({
   projectId: process.env.VITE_RP_WC_PROJECT_ID || "web3-university",
   chains: [localhost, hardhat, mainnet, sepolia],
   // connectors: [injected()],
-  ssr: true,
+  ssr: false,
   transports: {
     [localhost.id]: http(
       process.env.NEXT_PUBLIC_RPC_URL || "http://127.0.0.1:8545"
@@ -22,4 +22,3 @@ export const config = getDefaultConfig({
     [mainnet.id]: http(),
   },
 });
-
