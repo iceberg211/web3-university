@@ -8,7 +8,8 @@ export const config = getDefaultConfig({
   projectId: process.env.VITE_RP_WC_PROJECT_ID || "web3-university",
   chains: [localhost, hardhat, mainnet, sepolia],
   // connectors: [injected()],
-  ssr: true,
+  // Avoid server-side WalletConnect initialization which can require IndexedDB
+  ssr: false,
   transports: {
     [localhost.id]: http(
       process.env.NEXT_PUBLIC_RPC_URL || "http://127.0.0.1:8545"

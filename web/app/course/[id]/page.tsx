@@ -4,26 +4,39 @@ import { useParams } from "next/navigation";
 import { useAccount, useReadContract } from "wagmi";
 import { abis, addresses } from "@/lib/contracts";
 import BuyButton from "@/components/buy-button";
-import { stringToHex } from "viem";
+import { stringToHex, keccak256 } from "viem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
 
 export default function CourseDetail() {
   const { id } = useParams<{ id: string }>();
   const [course, setCourse] = useState<{ id: string; title: string; summary: string; priceYD: string } | null>(null);
   useEffect(() => {
     let mounted = true;
-    fetch(`/api/courses/${encodeURIComponent(id)}`)
-      .then(async (r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (mounted) setCourse(data);
-      })
-      .catch(() => {});
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("courses")
+          .select("id,title,summary,priceYD")
+          .eq("id", id)
+          .maybeSingle();
+        if (mounted) {
+          const rec = (data ?? null) as {
+            id: string;
+            title: string;
+            summary: string;
+            priceYD: string;
+          } | null;
+          setCourse(rec);
+        }
+      } catch {}
+    })();
     return () => {
       mounted = false;
     };
   }, [id]);
   const { address } = useAccount();
-  const idHex = stringToHex(id) as `0x${string}`;
+  const idHex = keccak256(stringToHex(id)) as `0x${string}`;
   const owned = useReadContract({
     address: addresses.Courses as `0x${string}`,
     abi: abis.Courses,

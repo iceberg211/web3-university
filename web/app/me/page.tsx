@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useAccount, useSignMessage, useReadContract } from "wagmi";
-import { verifyMessage, stringToHex } from "viem";
+import { verifyMessage, stringToHex, keccak256 } from "viem";
 import { getProfile, saveProfile, type ProfileRecord } from "@/lib/profile";
 import { loadCourses } from "@/lib/storage";
 import { addresses, abis } from "@/lib/contracts";
@@ -105,7 +105,7 @@ function VerifyBox({ address, profile }: { address: string; profile: ProfileReco
 
 function OwnedRow({ id, title }: { id: string; title: string }) {
   const { address } = useAccount();
-  const idHex = stringToHex(id) as `0x${string}`;
+  const idHex = keccak256(stringToHex(id)) as `0x${string}`;
   const has = useReadContract({
     address: addresses.Courses as `0x${string}`,
     abi: abis.Courses,

@@ -6,11 +6,12 @@ import {
   useWaitForTransactionReceipt,
   useAccount,
 } from "wagmi";
-import { parseUnits } from "viem";
+import { parseUnits, stringToHex, keccak256 } from "viem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Label from "@/components/ui/label";
 import { Input, Textarea } from "@/components/ui/input";
 import Button from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
 
 export default function NewCourse() {
   const [title, setTitle] = useState("");
@@ -22,16 +23,15 @@ export default function NewCourse() {
   const { writeContract, data: hash, isPending, error } = useWriteContract();
   const receipt = useWaitForTransactionReceipt({ hash });
 
-  const create = () => {
+  const create = async () => {
     const id = crypto.randomUUID();
-    // Persist course in SQLite via API
-    fetch("/api/courses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, title, summary, priceYD: price }),
-    }).catch(() => {});
+    // Persist metadata via Supabase (SSR/home reads from Supabase)
+    try {
+      await supabase.from("courses").insert({ id, title, summary, priceYD: price });
+    } catch {}
 
-    const idHex = `0x${Buffer.from(id).toString("hex")}` as `0x${string}`;
+    // Use bytes32 id on-chain: keccak256(string) to ensure fixed 32 bytes
+    const idHex = keccak256(stringToHex(id)) as `0x${string}`;
     writeContract({
       address: addresses.Courses as `0x${string}`,
       abi: abis.Courses,
