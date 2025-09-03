@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useBlockNumber, useReadContract } from "wagmi";
 import { abis, addresses } from "@/lib/contracts";
 import { keccak256, stringToHex } from "viem";
 
@@ -76,8 +76,33 @@ export function useOwnedCourse(id: string | undefined) {
     abi: abis.Courses,
     functionName: "hasPurchased",
     args: [idHex!, address ?? "0x0000000000000000000000000000000000000000"],
-    query: { enabled: !!address && !!idHex },
+    query: {
+      enabled: !!address && !!idHex,
+      refetchOnWindowFocus: true,
+      staleTime: 0,
+    },
   });
+  // 监听新区块，自动刷新购买状态（直到变为 true）
+  const block = useBlockNumber({ watch: true, query: { enabled: !!address && !!idHex && !query.data } });
+  useEffect(() => {
+    if (!address || !idHex) return;
+    // 如果尚未购买，则在新区块时尝试刷新
+    if (!query.data) query.refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [block.data]);
+
+  // 监听来自前端的“购买成功”事件，立即刷新
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent<string>).detail;
+        if (detail && id && detail === id) query.refetch();
+      } catch {}
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("course:purchased", handler as EventListener);
+      return () => window.removeEventListener("course:purchased", handler as EventListener);
+    }
+  }, [id, query]);
   return query;
 }
-

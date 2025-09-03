@@ -44,6 +44,8 @@ contract Courses is Ownable {
     function createCourse(bytes32 id, uint256 price, address author) external {
         require(!courses[id].exists, "exists");
         courses[id] = Course({price: price, author: author, exists: true});
+        // 作者自动拥有该课程的访问权限
+        purchased[id][author] = true;
         emit CourseCreated(id, author, price);
     }
 

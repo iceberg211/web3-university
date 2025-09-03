@@ -1,6 +1,6 @@
-import { ethers } from "hardhat";
+import { artifacts, ethers } from "hardhat";
 import { formatEther, parseUnits } from "ethers";
-import { mkdirSync, writeFileSync } from "fs";
+import { mkdirSync, writeFileSync, copyFileSync, existsSync } from "fs";
 import path from "path";
 
 async function main() {
@@ -33,7 +33,7 @@ async function main() {
   const coursesAddress = await courses.getAddress();
   console.log("Courses deployed at:", coursesAddress);
 
-  // 3) (Optional) Deploy MockSwap and seed with YD so ethToYD works on testnet
+  // 3) Deploy MockSwap
   const MockSwap = await ethers.getContractFactory("MockSwap");
   const mockSwap = await MockSwap.deploy(ydAddress);
   console.log("MockSwap tx:", mockSwap.deploymentTransaction()?.hash);
@@ -41,14 +41,20 @@ async function main() {
   const mockSwapAddress = await mockSwap.getAddress();
   console.log("MockSwap deployed at:", mockSwapAddress);
 
-  // Seed MockSwap with some YD so users can swap ETH->YD in demos
-  try {
-    const seedAmount = parseUnits("1000000", 18); // 1,000,000 YD
-    const tx = await (await YD.attach(ydAddress)).connect(deployer).mint(mockSwapAddress, seedAmount);
-    console.log("Seed MockSwap YD tx:", tx.hash);
-    await tx.wait();
-  } catch (e) {
-    console.warn("Warning: Failed to mint YD to MockSwap (is deployer owner?)", e);
+  // Optional: seed MockSwap with YD for ETH->YD demo
+  // Set SEED_SWAP_YD to a numeric string (in whole tokens) to enable, e.g. "1000000"
+  const seedStr = process.env.SEED_SWAP_YD;
+  if (seedStr && Number(seedStr) > 0) {
+    try {
+      const seedAmount = parseUnits(seedStr, 18);
+      const tx = await (await (await ethers.getContractFactory("YDToken")).attach(ydAddress)).connect(deployer).mint(mockSwapAddress, seedAmount);
+      console.log(`Seeded MockSwap with ${seedStr} YD. tx:`, tx.hash);
+      await tx.wait();
+    } catch (e) {
+      console.warn("Warning: Failed to mint YD to MockSwap (is deployer owner?)", e);
+    }
+  } else {
+    console.log("Skip seeding MockSwap YD (set SEED_SWAP_YD to enable).");
   }
 
   // 4) Write addresses to exports/<chainId>.json
@@ -65,6 +71,27 @@ async function main() {
   const outFile = path.join(outDir, `${chainId}.json`);
   writeFileSync(outFile, JSON.stringify(payload, null, 2));
   console.log(`Wrote addresses to exports/${chainId}.json`);
+
+  // 5) Export ABIs to exports/abis.json (same as export-abi script)
+  const names = ["YDToken", "MockSwap", "Courses"];
+  const abis: Record<string, any> = {};
+  for (const n of names) {
+    const art = await artifacts.readArtifact(n);
+    abis[n] = art.abi;
+  }
+  const abisFile = path.join(outDir, `abis.json`);
+  writeFileSync(abisFile, JSON.stringify(abis, null, 2));
+  console.log("Exported ABIs to exports/abis.json");
+
+  // 6) Sync ABIs and addresses to web/contracts (auto front-end sync)
+  const webContractsDir = path.join(__dirname, "..", "..", "web", "contracts");
+  mkdirSync(webContractsDir, { recursive: true });
+  copyFileSync(abisFile, path.join(webContractsDir, "abis.json"));
+  if (existsSync(outFile)) {
+    copyFileSync(outFile, path.join(webContractsDir, `${chainId}.json`));
+    copyFileSync(outFile, path.join(webContractsDir, `addresses.json`));
+  }
+  console.log("Synced contracts to web/contracts/ (ABIs + addresses)");
 }
 
 main().catch((e) => {
