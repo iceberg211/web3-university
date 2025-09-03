@@ -1,50 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useAccount, useReadContract } from "wagmi";
-import { abis, addresses } from "@/lib/contracts";
 import BuyButton from "@/components/buy-button";
-import { stringToHex, keccak256 } from "viem";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/lib/supabase";
+import { useCourse, useOwnedCourse } from "@/hooks/useCourse";
 
 export default function CourseDetail() {
   const { id } = useParams<{ id: string }>();
-  const [course, setCourse] = useState<{ id: string; title: string; summary: string; priceYD: string } | null>(null);
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from("courses")
-          .select("id,title,summary,priceYD")
-          .eq("id", id)
-          .maybeSingle();
-        if (mounted) {
-          const rec = (data ?? null) as {
-            id: string;
-            title: string;
-            summary: string;
-            priceYD: string;
-          } | null;
-          setCourse(rec);
-        }
-      } catch {}
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [id]);
-  const { address } = useAccount();
-  const idHex = keccak256(stringToHex(id)) as `0x${string}`;
-  const owned = useReadContract({
-    address: addresses.Courses as `0x${string}`,
-    abi: abis.Courses,
-    functionName: "hasPurchased",
-    args: [idHex, address ?? "0x0000000000000000000000000000000000000000"],
-    query: { enabled: !!address },
-  });
+  const { course, isLoading, error } = useCourse(id);
+  const owned = useOwnedCourse(id);
 
+  if (isLoading) return <div className="text-sm text-muted-foreground">加载课程中...</div>;
+  if (error) return <div className="text-sm text-red-600">加载失败：{error.message}</div>;
   if (!course) return <div>课程不存在</div>;
   return (
     <div className="space-y-6">
@@ -53,7 +19,9 @@ export default function CourseDetail() {
           <CardTitle>{course.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!owned.data ? (
+          {owned.isLoading ? (
+            <p className="muted">查询购买状态中...</p>
+          ) : !owned.data ? (
             <div className="space-y-3">
               <p className="text-red-600">未购买，无权限查看内容。</p>
               <BuyButton id={course.id} priceYD={course.priceYD} />
