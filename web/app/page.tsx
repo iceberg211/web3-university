@@ -1,5 +1,5 @@
 import CourseCard from "@/components/course-card";
-import { supabase } from "@/lib/supabase";
+import { fetchCoursesList } from "@/lib/courses";
 import { Card, CardContent } from "@/components/ui/card";
 import Button from "@/components/ui/button";
 import Link from "next/link";
@@ -11,20 +11,7 @@ import {
 } from "@/components/icons";
 
 export default async function Home() {
-  const { data, error } = await supabase
-    .from("courses")
-    .select("id,title,summary,priceYD,created_at")
-    .order("created_at", { ascending: false });
-  if (error) {
-    // Render empty state on error to avoid crashing SSR
-    console.warn("Failed to load courses:", error.message);
-  }
-  const courses = (data || []).map((r) => ({
-    id: r.id,
-    title: r.title,
-    summary: r.summary,
-    priceYD: r.priceYD,
-  }));
+  const courses = await fetchCoursesList();
   return (
     <div className="space-y-10">
       <section className="space-y-6">

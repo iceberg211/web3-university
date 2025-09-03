@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useAccount, useSignMessage, useReadContract } from "wagmi";
 import { verifyMessage, stringToHex, keccak256 } from "viem";
 import { getProfile, saveProfile, type ProfileRecord } from "@/lib/profile";
-import { loadCourses } from "@/lib/storage";
+import { type CourseSummary } from "@/lib/courses";
+import { useCoursesList } from "@/hooks/useCoursesList";
 import { addresses, abis } from "@/lib/contracts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Label from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Button from "@/components/ui/button";
+import type { CourseRecord } from "@/hooks/useCourse";
 
 export default function MePage() {
   const { address, isConnected } = useAccount();
@@ -34,8 +36,9 @@ export default function MePage() {
     setProfile({ name, message: messageToSign, signature });
   };
 
-  // Purchased courses (client-side filter from local list + on-chain check)
-  const courses = loadCourses();
+  // Load all courses from Supabase, then filter by on-chain ownership
+  const { courses, loading: loadingCourses } = useCoursesList();
+  const [anyOwned, setAnyOwned] = useState(false);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -71,12 +74,16 @@ export default function MePage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {!isConnected && <div className="muted">请先连接钱包</div>}
-          {isConnected && courses.length === 0 && (
+          {isConnected && loadingCourses && <div className="muted">加载中...</div>}
+          {isConnected && !loadingCourses && courses.length === 0 && (
             <div className="muted">暂无课程</div>
           )}
           {isConnected && courses.map((c) => (
-            <OwnedRow key={c.id} id={c.id} title={c.title} />
+            <OwnedRow key={c.id} id={c.id} title={c.title} onOwned={() => setAnyOwned(true)} />
           ))}
+          {isConnected && !loadingCourses && courses.length > 0 && !anyOwned && (
+            <div className="muted">尚未购买任何课程</div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -103,7 +110,7 @@ function VerifyBox({ address, profile }: { address: string; profile: ProfileReco
   );
 }
 
-function OwnedRow({ id, title }: { id: string; title: string }) {
+function OwnedRow({ id, title, onOwned }: { id: string; title: string; onOwned?: () => void }) {
   const { address } = useAccount();
   const idHex = keccak256(stringToHex(id)) as `0x${string}`;
   const has = useReadContract({
@@ -115,6 +122,7 @@ function OwnedRow({ id, title }: { id: string; title: string }) {
   });
   if (!address) return null;
   if (has.data) {
+    onOwned?.();
     return <div className="flex items-center justify-between"><span>{title}</span><span className="text-xs text-neutral-500">已购买</span></div>;
   }
   return null;
