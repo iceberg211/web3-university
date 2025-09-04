@@ -1,22 +1,26 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { useAccount, useSignMessage, useReadContract } from "wagmi";
+import { useAccount, useSignMessage, useReadContract, useBalance } from "wagmi";
 import { verifyMessage, stringToHex, keccak256 } from "viem";
 import { getProfile, saveProfile, type ProfileRecord } from "@/lib/profile";
-import { type CourseSummary } from "@/lib/courses";
 import { useCoursesList } from "@/hooks/useCoursesList";
 import { addresses, abis } from "@/lib/contracts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Label from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Button from "@/components/ui/button";
-import type { CourseRecord } from "@/hooks/useCourse";
 
 export default function MePage() {
   const { address, isConnected } = useAccount();
   const [name, setName] = useState("");
   const [profile, setProfile] = useState<ProfileRecord | undefined>();
   const { signMessageAsync } = useSignMessage();
+  const ethBal = useBalance({ address, query: { enabled: !!address } });
+  const ydBal = useBalance({
+    address,
+    token: addresses.YDToken as `0x${string}`,
+    query: { enabled: !!address },
+  });
 
   useEffect(() => {
     const p = getProfile(address);
@@ -31,7 +35,9 @@ export default function MePage() {
 
   const save = async () => {
     if (!address) return;
-    const signature = (await signMessageAsync({ message: messageToSign })) as `0x${string}`;
+    const signature = (await signMessageAsync({
+      message: messageToSign,
+    })) as `0x${string}`;
     saveProfile(address, { name, message: messageToSign, signature });
     setProfile({ name, message: messageToSign, signature });
   };
@@ -55,16 +61,38 @@ export default function MePage() {
               </div>
             )}
           </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-md border p-3">
+              <div className="text-xs text-neutral-500 mb-1">ETH 余额</div>
+              <div className="text-lg font-medium">
+                {ethBal.data
+                  ? `${Number(ethBal.data.formatted).toFixed(6)} ${
+                      ethBal.data.symbol
+                    }`
+                  : "加载中..."}
+              </div>
+            </div>
+            <div className="rounded-md border p-3">
+              <div className="text-xs text-neutral-500 mb-1">YD 余额</div>
+              <div className="text-lg font-medium">
+                {ydBal.data
+                  ? `${Number(ydBal.data.formatted).toFixed(6)} ${
+                      ydBal.data.symbol
+                    }`
+                  : "加载中..."}
+              </div>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>昵称（签名保存）</Label>
             <div className="flex gap-2">
               <Input value={name} onChange={(e) => setName(e.target.value)} />
-              <Button onClick={save} disabled={!isConnected || !name}>签名保存</Button>
+              <Button onClick={save} disabled={!isConnected || !name}>
+                签名保存
+              </Button>
             </div>
           </div>
-          {profile && (
-            <VerifyBox address={address!} profile={profile} />
-          )}
+          {profile && <VerifyBox address={address!} profile={profile} />}
         </CardContent>
       </Card>
 
@@ -74,28 +102,47 @@ export default function MePage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {!isConnected && <div className="muted">请先连接钱包</div>}
-          {isConnected && loadingCourses && <div className="muted">加载中...</div>}
+          {isConnected && loadingCourses && (
+            <div className="muted">加载中...</div>
+          )}
           {isConnected && !loadingCourses && courses.length === 0 && (
             <div className="muted">暂无课程</div>
           )}
-          {isConnected && courses.map((c) => (
-            <OwnedRow key={c.id} id={c.id} title={c.title} onOwned={() => setAnyOwned(true)} />
-          ))}
-          {isConnected && !loadingCourses && courses.length > 0 && !anyOwned && (
-            <div className="muted">尚未购买任何课程</div>
-          )}
+          {isConnected &&
+            courses.map((c) => (
+              <OwnedRow
+                key={c.id}
+                id={c.id}
+                title={c.title}
+                onOwned={() => setAnyOwned(true)}
+              />
+            ))}
+          {isConnected &&
+            !loadingCourses &&
+            courses.length > 0 &&
+            !anyOwned && <div className="muted">尚未购买任何课程</div>}
         </CardContent>
       </Card>
     </div>
   );
 }
 
-function VerifyBox({ address, profile }: { address: string; profile: ProfileRecord }) {
+function VerifyBox({
+  address,
+  profile,
+}: {
+  address: string;
+  profile: ProfileRecord;
+}) {
   const [valid, setValid] = useState<boolean | null>(null);
   useEffect(() => {
     (async () => {
       try {
-        const ok = await verifyMessage({ message: profile.message, signature: profile.signature, address });
+        const ok = await verifyMessage({
+          message: profile.message,
+          signature: profile.signature,
+          address,
+        });
         setValid(ok);
       } catch {
         setValid(false);
@@ -110,7 +157,15 @@ function VerifyBox({ address, profile }: { address: string; profile: ProfileReco
   );
 }
 
-function OwnedRow({ id, title, onOwned }: { id: string; title: string; onOwned?: () => void }) {
+function OwnedRow({
+  id,
+  title,
+  onOwned,
+}: {
+  id: string;
+  title: string;
+  onOwned?: () => void;
+}) {
   const { address } = useAccount();
   const idHex = keccak256(stringToHex(id)) as `0x${string}`;
   const has = useReadContract({
@@ -123,7 +178,20 @@ function OwnedRow({ id, title, onOwned }: { id: string; title: string; onOwned?:
   if (!address) return null;
   if (has.data) {
     onOwned?.();
-    return <div className="flex items-center justify-between"><span>{title}</span><span className="text-xs text-neutral-500">已购买</span></div>;
+    return (
+      <div className="flex items-center justify-between">
+        <span>{title}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-neutral-500">已购买</span>
+          <a
+            href={`/course/${encodeURIComponent(id)}`}
+            className="text-xs underline"
+          >
+            查看课程
+          </a>
+        </div>
+      </div>
+    );
   }
   return null;
 }

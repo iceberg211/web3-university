@@ -1,9 +1,6 @@
-
-
-
 ## 1. 产品背景
 
-Web3大学旨在通过 **链上课程购买系统** 实现教育内容的去中心化支付与授权。用户可使用平台代币（YD币）购买课程，课程作者则通过YD币兑换ETH/USDT，并支持AAVE质押获取收益。
+Web3 大学旨在通过 **链上课程购买系统** 实现教育内容的去中心化支付与授权。用户可使用平台代币（YD 币）购买课程，课程作者则通过 YD 币兑换 ETH/USDT，并支持 AAVE 质押获取收益。
 
 ---
 
@@ -11,58 +8,68 @@ Web3大学旨在通过 **链上课程购买系统** 实现教育内容的去中�
 
 ### 2.1 用户端（课程学员）
 
-* **钱包连接**
+- **钱包连接**
 
-  * 支持MetaMask或其他Web3钱包，显示ENS/地址。
-* **课程列表展示**
+  - 支持 MetaMask 或其他 Web3 钱包，显示 ENS/地址。
 
-  * 从链上合约 `mapping(courseId => userOwned)` 获取用户是否已购买。
-  * 课程基本信息（标题、简介、价格）存储在Web2数据库。
-* **课程详情**
+- **课程列表展示**
 
-  * 点击课程详情时，后端通过钱包地址校验是否购买过对应课程（链上查询）。
-  * 已购买 → 返回Web2存储的课程内容。
-  * 未购买 → 提示无权限。
-* **课程购买**
+  - 从链上合约 `mapping(courseId => userOwned)` 获取用户是否已购买。
+  - 课程基本信息（标题、简介、价格）存储在 Web2 数据库。
 
-  * 步骤1：approve （授权合约使用用户指定数量的YD币）。
-  * 步骤2：调用合约 `buyCourse(courseId)` 扣除YD币，转账给课程作者，并更新链上 `mapping`。
-* **代币兑换**
+- **课程详情**
 
-  * 提供 ETH ↔ YD 币兑换功能（例如 1 ETH = 4000 YD）。
-  * 界面有输入兑换数量和确认兑换按钮。
+  - 点击课程详情时，后端通过钱包地址校验是否购买过对应课程（链上查询）。
+  - 已购买 → 返回 Web2 存储的课程内容。
+  - 未购买 → 提示无权限。
+
+- **课程购买**
+
+  - 步骤 1：approve （授权合约使用用户指定数量的 YD 币）。
+  - 步骤 2：调用合约 `buyCourse(courseId)` 扣除 YD 币，转账给课程作者，并更新链上 `mapping`。
+
+- **代币兑换**
+
+  - 提供 ETH ↔ YD 币兑换功能（例如 1 ETH = 4000 YD）。
+  - 界面有输入兑换数量和确认兑换按钮。
 
 ---
 
 ### 2.2 作者端（课程作者）
 
-* **课程创建**
+- **课程创建**
 
-  * 输入课程标题、内容、价格（单位：YD币）。
-  * 课程详情存储在Web2（数据库/localStorage）。
-  * 课程ID与作者地址存储在链上合约（mapping）。
-  * 创建课程需支付Gas。
-* **收入管理**
+  - 输入课程标题、内容、价格（单位：YD 币）。
+  - 课程详情存储在 Web2（数据库/localStorage）。
+  - 课程 ID 与作者地址存储在链上合约（mapping）。
+  - 创建课程需支付 Gas。
 
-  * 购买课程所得的YD币会进入作者钱包。
-  * 作者可将YD币兑换成ETH或USDT。
-* **选修功能：AAVE质押**
+- **收入管理**
 
-  * 作者可将ETH/USDT存入AAVE合约。
-  * 三次钱包交互（approve → supply → aToken到账）。
-  * 获得利息收益（如年化5%）。
+  - 购买课程所得的 YD 币会进入作者钱包。
+  - 作者可将 YD 币兑换成 ETH 或 USDT。
+  -
+
+- **选修功能：AAVE 质押**
+  - 作者可将 ETH/USDT 存入 AAVE 合约。
+  - 三次钱包交互
+    - 第一次和合约交互 交 gas
+    - 第二次合约确认成功
+    - 第三次合约 钱包会再弹一次，合约给用户赚钱 aethusdt
+  - 获得利息收益（如年化 5%）。
 
 ---
 
 ### 2.3 管理与平台逻辑
 
-* 平台可在交易中收取手续费（如2%-5%）。
-* 平台通过合约控制资金流转：
+- 平台可在交易中收取手续费（如 2%-5%）。
+- 平台通过合约控制资金流转：
 
-  * 学员 → 合约（approve + transfer） → 作者钱包。
-* 映射关系：
+  - 学员 → 合约（approve + transfer） → 作者钱包。
 
-  * `mapping(courseId => mapping(user => bool))` 记录用户是否购买。
+- 映射关系：
+
+  - `mapping(courseId => mapping(user => bool))` 记录用户是否购买。
 
 ---
 
@@ -70,40 +77,43 @@ Web3大学旨在通过 **链上课程购买系统** 实现教育内容的去中�
 
 ### 3.1 前端
 
-* **框架**: next.js
-* **钱包连接**:
+- **框架**: next.js
+- **钱包连接**:
 
-  * wagmi + viem （更现代）
-  * 或 ethers.js（更轻量）
-* **UI**: TailwindCSS + shadcn/ui
+  - wagmi + viem （更现代）
+  - 或 ethers.js（更轻量）
+
+- **UI**: TailwindCSS + shadcn/ui
 
 ### 3.2 后端
 
-* **Web2部分存储课程信息**
+- **Web2 部分存储课程信息**
 
-  * 存储在localStorage即可。
+  - 存储在数据库中
 
 ### 3.3 合约（Solidity）
 
-* **代币合约**: ERC20 (YD Token)
-* **课程合约**:
+- **代币合约**: ERC20 (YD Token)
+- **课程合约**:
 
-  * `createCourse(courseId, price, author)`
-  * `buyCourse(courseId)`
-  * `mapping(courseId => mapping(user => bool))` 购买记录
-  * `event CourseCreated(courseId, author, price)`
-  * `event CoursePurchased(courseId, user, price)`
-* **兑换合约（可简化为Mock Swap）**
+  - `createCourse(courseId, price, author)`
+  - `buyCourse(courseId)`
+  - `mapping(courseId => mapping(user => bool))` 购买记录
+  - `event CourseCreated(courseId, author, price)`
+  - `event CoursePurchased(courseId, user, price)`
 
-  * 实现 ETH ↔ YD 币兑换
-* **AAVE交互**
+- **兑换合约（可简化为 Mock Swap）**
 
-  * 调用 AAVE V3 lending pool 合约（`supply()` 方法）
-  * 资产获得 aToken (aETHUSDT)。
+  - 实现 ETH ↔ YD 币兑换
+
+- **AAVE 交互**
+
+  - 调用 AAVE V3 lending pool 合约（`supply()` 方法）
+  - 资产获得 aToken (aETHUSDT)。
 
 ### 3.4 The Graph（可选）
 
-* 用于链上课程购买事件的索引，前端可快速查询用户已购买课程列表。
+- 用于链上课程购买事件的索引，前端可快速查询用户已购买课程列表。
 
 ---
 
@@ -127,20 +137,17 @@ flowchart TD
   M --> N[AAVE质押获取收益]
 ```
 
----
-
 ## 5. 技术栈总结
 
-* **智能合约**: Solidity + Hardhat
-* **代币标准**: ERC20 (hewei币)
-* **链上交互**: wagmi/viem 或 ethers.js 
-* **前端**: Next.js , 需要使用next.js 的cli 来初始化项目，使用pnpm来进行包管理
-* **DeFi对接**: AAVE V3 合约
+- **智能合约**: Solidity + Hardhat
+- **代币标准**: ERC20 (YD 币)
+- **链上交互**: wagmi/viem 或 ethers.js
+- **前端**: Next.js , 需要使用 next.js 的 cli 来初始化项目，使用 pnpm 来进行包管理
+- **DeFi 对接**: AAVE V3 合约
 
 ---
 
 ## 6. 项目结构如下：
-
 
 ```
 web3-university/
@@ -201,4 +208,66 @@ web3-university/
    ├─ src/mapping.ts
    └─ package.json
 
-```
+## 7. AAVE 质押 MVP（简化方案）
+
+目标：先实现“ETH 兑换 USDT，再质押到 AAVE”，仅在测试网落地；在不改动核心课程/兑换功能的前提下，快速交付最小可用版本。
+
+### 7.1 范围与顺序（更简单）
+
+- 步骤 1：ETH → USDT 兑换（测试网）
+  - 优先使用测试网 Uniswap v3 路由完成真实兑换。
+  - 如目标测试网缺少 USDT 流动性，则退而求其次使用 USDC（与 AAVE 测试网支持度更好）。
+  - 若仍不可行，临时提供 MockUSDT + MockSwap 仅用于演示兑换 UI（不参与 AAVE 存入）。
+- 步骤 2：将资产存入 AAVE（测试网）
+  - ETH：通过 WETHGateway `depositETH()` 存入（1 次钱包交互）。
+  - USDT：先 `approve(Pool)`，再 `Pool.supply()`（2 次钱包交互）。
+  - 三次钱包交互符合预期：① 兑换（swap）② 授权（approve）③ 存入（supply）。
+
+### 7.2 仅测试网（不部署主网）
+
+- 默认网络：Sepolia（可根据团队 RPC 与资产支持度调整）。
+- 需要在 `.env.local` 或 `contracts/exports/<chainId>.json` 中配置下列地址：
+  - AAVE：`AAVE_POOL`、`WETH_GATEWAY`、`WETH`、`aWETH`、（可选）`USDT`、`aUSDT`
+  - Uniswap：`SWAP_ROUTER`（若采用真实兑换）
+
+### 7.3 合约与导出（保持最少）
+
+- 不新增业务合约（首期直接与 AAVE/Uniswap 合约交互）。
+- 若回退到 Mock 方案：
+  - 新增 `MockUSDT.sol`（6 位小数）与 `MockSwapUSDT.sol`（固定汇率）
+  - 仅供演示兑换 UI，AAVE 存入仍以 ETH 路径为主。
+- `contracts/exports/<chainId>.json` 增加上述第三方合约地址，供前端引用。
+
+### 7.4 前端与交互
+
+- 新增页面：`/author/stake`
+- 两块区域：
+  - 兑换区：ETH → USDT（或 USDC），展示余额、价格、最小可得，按钮一键兑换。
+  - 质押区：
+    - 资产切换：ETH / USDT（默认 ETH 可用，USDT 视可用性打开）
+    - ETH：输入金额 → 调用 `WETHGateway.depositETH()`
+    - USDT：检测 `allowance`，不足则先 `approve`，再 `Pool.supply()`
+    - UI 状态分三步：兑换 → 授权 → 存入；aToken 到账在“存入”确认中提示（无需额外签名）
+
+### 7.5 实施步骤（MVP）
+
+1) 配置测试网地址（AAVE 与 Uniswap），更新 `contracts/exports` 与 `web/.env.local.example`
+2) 前端 `/author/stake` 搭建最小 UI（复用 wagmi、useTxStatus）
+3) 打通 ETH 存入 AAVE 路径（WETHGateway），完成成功/异常提示
+4) 兑币对接：优先对接 Uniswap v3（若不稳定则临时 Mock）
+5) 补充 USDT 存入路径（approve + supply），若测试网无 USDT 支持，则改用 USDC
+
+### 7.6 验收标准
+
+- 在测试网完成以下闭环：
+  - ① ETH → USDT（或 USDC）兑换成功
+  - ② ETH 存入 AAVE 成功（aWETH 余额增加）
+  - ③ USDT（或 USDC）存入 AAVE 成功（aToken 余额增加）
+  - ④ 全流程三次钱包交互：Swap → Approve → Supply
+- 课程购买与 YD 兑换功能不受影响
+
+### 7.7 备注与简化点
+
+- AAVE 的利息通过 aToken 实时累积，无需额外“领取”交易
+- 若 USDT 在所选测试网缺少官方支持或流动性，优先改用 USDC，命名上在 UI 标注“测试网使用 USDC 代替”
+- 后续可根据需要再引入 Adapter 合约以支持平台抽成或额度管理

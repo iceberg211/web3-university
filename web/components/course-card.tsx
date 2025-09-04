@@ -29,19 +29,27 @@ export default function CourseCard({
     query: { enabled: !!address },
   });
 
+  const ownedFlag = Boolean(owned.data);
   return (
     <Card className="flex flex-col">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+      <CardHeader className="space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="truncate">{title}</CardTitle>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border px-2 py-0.5 text-xs">{priceYD} YD</span>
+            {ownedFlag && (
+              <span className="rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-2 py-0.5 text-xs">已购买</span>
+            )}
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <p className="text-sm text-neutral-600 dark:text-neutral-300">
+        <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">
           {summary}
         </p>
-        <div className="text-sm">价格：{priceYD} YD</div>
         <div>
           <Link href={`/course/${encodeURIComponent(id)}`}>
-            <Button size="md">{owned.data ? "查看内容" : "购买"}</Button>
+            <Button size="md">{ownedFlag ? "查看内容" : "购买"}</Button>
           </Link>
         </div>
       </CardContent>
