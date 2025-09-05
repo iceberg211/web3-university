@@ -16,31 +16,39 @@ export default function BuyButton({
   const { isConnected, address } = useAccount();
   const { connectors, connect } = useConnect();
   const { writeContract, data: hash, error, isPending } = useWriteContract();
-  const receipt = useWaitForTransactionReceipt({ hash });
-  // 购买成功后，广播事件，方便课程详情刷新权限状态（仅在 buy 成功时发）
-  const firedRef = useRef(false);
+  // 最近一次动作类型（区分 approve / buy）
   const lastActionRef = useRef<"approve" | "buy" | null>(null);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!receipt.isSuccess || firedRef.current) return;
-    if (lastActionRef.current !== "buy") return; // 仅 buy 成功才广播
-    firedRef.current = true;
-    try {
-      window.dispatchEvent(new CustomEvent("course:purchased", { detail: id }));
-    } catch {}
-  }, [receipt.isSuccess, id]);
+  const firedRef = useRef(false);
 
   const idHex = keccak256(stringToHex(id)) as `0x${string}`;
   const price = parseUnits(priceYD, 18);
 
   // 通用 allowance hook
-  const { needsApproval } = useAllowance({
+  const { needsApproval, allowanceQuery } = useAllowance({
     token: addresses.YDToken as `0x${string}`,
     spender: addresses.Courses as `0x${string}`,
     amount: price,
     enabled: !!address,
   });
   const hasAllowance = useMemo(() => !needsApproval, [needsApproval]);
+
+  // 使用 onSuccess 钩子响应交易确认：
+  // - 若为 approve：刷新 allowance，使“购买课程”按钮立刻可用
+  // - 若为 buy：广播事件，刷新课程页面的购买状态
+  const receipt = useWaitForTransactionReceipt({
+    hash,
+    onSuccess: () => {
+      if (lastActionRef.current === "approve") {
+        allowanceQuery.refetch?.();
+      } else if (lastActionRef.current === "buy" && !firedRef.current) {
+        firedRef.current = true;
+        try {
+          if (typeof window !== "undefined")
+            window.dispatchEvent(new CustomEvent("course:purchased", { detail: id }));
+        } catch {}
+      }
+    },
+  });
 
   const approve = () => {
     lastActionRef.current = "approve";

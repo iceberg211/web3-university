@@ -1,10 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { useAccount, useSignMessage, useReadContract, useBalance } from "wagmi";
-import { verifyMessage, stringToHex, keccak256 } from "viem";
+import { useAccount, useSignMessage, useBalance } from "wagmi";
+import { verifyMessage } from "viem";
 import { getProfile, saveProfile, type ProfileRecord } from "@/lib/profile";
-import { useCoursesList } from "@/hooks/useCoursesList";
-import { addresses, abis } from "@/lib/contracts";
+import { addresses } from "@/lib/contracts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Label from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,7 @@ export default function MePage() {
 
   const messageToSign = useMemo(() => {
     if (!address) return "";
-    return `Web3大学\nAction: UpdateProfileName\nAddress: ${address}\nName: ${name}`;
+    return `Web3大学\nAction: UpdateProfileName\nAddress: ${address}\nName: ${name}\nTimestamp: ${Math.floor(Date.now()/1000)}`;
   }, [address, name]);
 
   const save = async () => {
@@ -42,9 +41,32 @@ export default function MePage() {
     setProfile({ name, message: messageToSign, signature });
   };
 
-  // Load all courses from Supabase, then filter by on-chain ownership
-  const { courses, loading: loadingCourses } = useCoursesList();
-  const [anyOwned, setAnyOwned] = useState(false);
+  // Secure-owned courses via server verification + signature
+  const [ownedCourses, setOwnedCourses] = useState<Array<{ id: string; title: string; summary: string; priceYD: string }>>([]);
+  const [loadingOwned, setLoadingOwned] = useState(false);
+  const [ownedError, setOwnedError] = useState<string | null>(null);
+
+  const signAndFetchOwned = async () => {
+    if (!address) return;
+    setLoadingOwned(true);
+    setOwnedError(null);
+    try {
+      const msg = `Web3大学\nAction: FetchOwnedCourses\nAddress: ${address}\nTimestamp: ${Math.floor(Date.now()/1000)}`;
+      const signature = (await signMessageAsync({ message: msg })) as `0x${string}`;
+      const res = await fetch("/api/me/courses", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ address, message: msg, signature }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "请求失败");
+      setOwnedCourses(json.owned || []);
+    } catch (e: any) {
+      setOwnedError(e?.message || "请求失败");
+    } finally {
+      setLoadingOwned(false);
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -98,29 +120,26 @@ export default function MePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>已购课程</CardTitle>
+          <CardTitle>已购课程（签名验证）</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {!isConnected && <div className="muted">请先连接钱包</div>}
-          {isConnected && loadingCourses && (
-            <div className="muted">加载中...</div>
+          {isConnected && (
+            <div className="flex gap-2 items-center">
+              <Button size="sm" onClick={signAndFetchOwned} disabled={loadingOwned}>签名加载我的课程</Button>
+              {loadingOwned && <span className="muted">加载中...</span>}
+              {ownedError && <span className="text-red-600 text-xs">{ownedError}</span>}
+            </div>
           )}
-          {isConnected && !loadingCourses && courses.length === 0 && (
-            <div className="muted">暂无课程</div>
+          {isConnected && ownedCourses.length === 0 && !loadingOwned && (
+            <div className="muted">尚未购买任何课程，或尚未签名加载</div>
           )}
-          {isConnected &&
-            courses.map((c) => (
-              <OwnedRow
-                key={c.id}
-                id={c.id}
-                title={c.title}
-                onOwned={() => setAnyOwned(true)}
-              />
-            ))}
-          {isConnected &&
-            !loadingCourses &&
-            courses.length > 0 &&
-            !anyOwned && <div className="muted">尚未购买任何课程</div>}
+          {isConnected && ownedCourses.map((c) => (
+            <div key={c.id} className="flex items-center justify-between">
+              <span>{c.title}</span>
+              <a className="text-xs underline" href={`/course/${encodeURIComponent(c.id)}`}>查看课程</a>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>
@@ -157,41 +176,4 @@ function VerifyBox({
   );
 }
 
-function OwnedRow({
-  id,
-  title,
-  onOwned,
-}: {
-  id: string;
-  title: string;
-  onOwned?: () => void;
-}) {
-  const { address } = useAccount();
-  const idHex = keccak256(stringToHex(id)) as `0x${string}`;
-  const has = useReadContract({
-    address: addresses.Courses as `0x${string}`,
-    abi: abis.Courses,
-    functionName: "hasPurchased",
-    args: [idHex, address ?? "0x0000000000000000000000000000000000000000"],
-    query: { enabled: !!address },
-  });
-  if (!address) return null;
-  if (has.data) {
-    onOwned?.();
-    return (
-      <div className="flex items-center justify-between">
-        <span>{title}</span>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-500">已购买</span>
-          <a
-            href={`/course/${encodeURIComponent(id)}`}
-            className="text-xs underline"
-          >
-            查看课程
-          </a>
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
+// 移除逐条 on-chain 校验，改为签名后由服务端返回已购课程

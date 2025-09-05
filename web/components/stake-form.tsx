@@ -466,4 +466,3 @@ export default function StakeForm() {
   );
 }
 
-// Reuse shared TxStatus component (no network warning for testnets)
