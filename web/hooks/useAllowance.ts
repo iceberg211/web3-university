@@ -1,0 +1,40 @@
+"use client";
+import { useAccount, useReadContract } from "wagmi";
+import { isAddress } from "viem";
+import { Erc20Abi } from "@/lib/defi";
+
+export function useAllowance({
+  token,
+  owner,
+  spender,
+  amount,
+  enabled = true,
+}: {
+  token: `0x${string}` | undefined;
+  owner?: `0x${string}` | undefined;
+  spender: `0x${string}` | undefined;
+  amount?: bigint | undefined;
+  enabled?: boolean;
+}) {
+  const account = useAccount();
+  const ownerAddr = owner || (account.address as `0x${string}` | undefined);
+  const valid = Boolean(
+    enabled && token && spender && ownerAddr && isAddress(token) && isAddress(spender) && isAddress(ownerAddr)
+  );
+  const allowanceQuery = useReadContract({
+    address: (token || "0x0000000000000000000000000000000000000000") as `0x${string}`,
+    abi: Erc20Abi,
+    functionName: "allowance",
+    args: [
+      (ownerAddr || "0x0000000000000000000000000000000000000000") as `0x${string}`,
+      (spender || "0x0000000000000000000000000000000000000000") as `0x${string}`,
+    ],
+    query: { enabled: valid },
+  });
+
+  const allowance = (allowanceQuery.data as bigint | undefined) ?? undefined;
+  const needsApproval = Boolean(amount !== undefined && allowance !== undefined && amount > allowance);
+
+  return { allowanceQuery, allowance, needsApproval } as const;
+}
+

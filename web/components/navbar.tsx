@@ -11,7 +11,7 @@ export default function Navbar() {
         </Link>
         <nav className="flex items-center gap-8 text-sm">
           <Link href="/exchange" className="inline-flex items-center gap-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors hover-lift">
-            <IconSwap className="w-4 h-4" /> 兑换 YD
+            <IconSwap className="w-4 h-4" /> 兑换 / 质押
           </Link>
           <Link href="/author/new" className="inline-flex items-center gap-2 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors hover-lift">
             <IconPlusCircle className="w-4 h-4" /> 作者平台

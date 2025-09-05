@@ -1,11 +1,18 @@
 "use client";
 import { useEffect, useMemo, useRef } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect, useReadContract } from "wagmi";
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useConnect } from "wagmi";
 import { abis, addresses } from "@/lib/contracts";
+import { useAllowance } from "@/hooks/useAllowance";
 import { parseUnits, stringToHex, keccak256 } from "viem";
 import Button from "@/components/ui/button";
 
-export default function BuyButton({ id, priceYD }: { id: string; priceYD: string }) {
+export default function BuyButton({
+  id,
+  priceYD,
+}: {
+  id: string;
+  priceYD: string;
+}) {
   const { isConnected, address } = useAccount();
   const { connectors, connect } = useConnect();
   const { writeContract, data: hash, error, isPending } = useWriteContract();
@@ -26,22 +33,14 @@ export default function BuyButton({ id, priceYD }: { id: string; priceYD: string
   const idHex = keccak256(stringToHex(id)) as `0x${string}`;
   const price = parseUnits(priceYD, 18);
 
-  // 读取当前 allowance，若不足则提示需先授权
-  const allowanceQuery = useReadContract({
-    address: addresses.YDToken as `0x${string}`,
-    abi: abis.YDToken,
-    functionName: "allowance",
-    args: [
-      (address || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-      addresses.Courses as `0x${string}`,
-    ],
-    query: { enabled: !!address },
+  // 通用 allowance hook
+  const { needsApproval } = useAllowance({
+    token: addresses.YDToken as `0x${string}`,
+    spender: addresses.Courses as `0x${string}`,
+    amount: price,
+    enabled: !!address,
   });
-  const hasAllowance = useMemo(() => {
-    const a = allowanceQuery.data as bigint | undefined;
-    if (a === undefined) return false;
-    return a >= price;
-  }, [allowanceQuery.data, price]);
+  const hasAllowance = useMemo(() => !needsApproval, [needsApproval]);
 
   const approve = () => {
     lastActionRef.current = "approve";

@@ -27,6 +27,13 @@ export const UniswapV2RouterAbi = [
     ],
     outputs: [{ name: "amounts", type: "uint256[]" }],
   },
+  {
+    name: "WETH",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
 ] as const;
 
 export const Erc20Abi = [
@@ -66,4 +73,3 @@ export const AavePoolAbi = [
     outputs: [],
   },
 ] as const;
-
