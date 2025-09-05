@@ -4,8 +4,9 @@ export function Card({ children, className = "" }: PropsWithChildren<{ className
   return (
     <div
       className={[
-        "rounded-[var(--radius)] border border-[var(--border)] bg-white dark:bg-neutral-950",
-        "shadow-[0_1px_0_0_rgba(0,0,0,0.04)]",
+        "rounded-[var(--radius)] border border-[var(--border)] bg-[var(--elev)] dark:bg-neutral-950",
+        "shadow-[var(--shadow)] hover:shadow-[var(--shadow-md)] transition-shadow duration-200",
+        "hover:border-neutral-300 dark:hover:border-neutral-600 transition-all duration-200",
         className,
       ].join(" ")}
     >
@@ -15,7 +16,7 @@ export function Card({ children, className = "" }: PropsWithChildren<{ className
 }
 
 export function CardHeader({ children, className = "" }: PropsWithChildren<{ className?: string }>) {
-  return <div className={["px-5 pt-5", className].join(" ")}>{children}</div>;
+  return <div className={["px-6 pt-6", className].join(" ")}>{children}</div>;
 }
 
 export function CardTitle({ children, className = "" }: PropsWithChildren<{ className?: string }>) {
@@ -25,6 +26,6 @@ export function CardTitle({ children, className = "" }: PropsWithChildren<{ clas
 }
 
 export function CardContent({ children, className = "" }: PropsWithChildren<{ className?: string }>) {
-  return <div className={["px-5 pb-5", className].join(" ")}>{children}</div>;
+  return <div className={["px-6 pb-6", className].join(" ")}>{children}</div>;
 }
 

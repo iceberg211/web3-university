@@ -31,25 +31,33 @@ export default function CourseCard({
 
   const ownedFlag = Boolean(owned.data);
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="space-y-1">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className="truncate">{title}</CardTitle>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full border px-2 py-0.5 text-xs">{priceYD} YD</span>
+    <Card className="flex flex-col hover-lift group h-full">
+      <CardHeader className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="line-clamp-2 text-lg group-hover:text-neutral-700 dark:group-hover:text-neutral-200 transition-colors">
+            {title}
+          </CardTitle>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="rounded-full border border-neutral-200 dark:border-neutral-700 px-3 py-1 text-xs font-medium bg-neutral-50 dark:bg-neutral-800">
+              {priceYD} YD
+            </span>
             {ownedFlag && (
-              <span className="rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-2 py-0.5 text-xs">已购买</span>
+              <span className="rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 text-xs font-medium">
+                已购买
+              </span>
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">
+      <CardContent className="flex flex-col gap-4 flex-1">
+        <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-3 leading-relaxed">
           {summary}
         </p>
-        <div>
-          <Link href={`/course/${encodeURIComponent(id)}`}>
-            <Button size="md">{ownedFlag ? "查看内容" : "购买"}</Button>
+        <div className="mt-auto">
+          <Link href={`/course/${encodeURIComponent(id)}`} className="block">
+            <Button size="md" className="w-full">
+              {ownedFlag ? "查看内容" : "购买课程"}
+            </Button>
           </Link>
         </div>
       </CardContent>

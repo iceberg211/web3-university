@@ -13,50 +13,52 @@ import {
 export default async function Home() {
   const courses = await fetchCoursesList();
   return (
-    <div className="space-y-10">
-      <section className="space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">
+    <div className="space-y-10 fade-in">
+      <section className="space-y-8">
+        <div className="space-y-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight">
             链上课程，简单拥有
           </h1>
-          <p className="muted">黑白极简 · 透明结算 · 一次购买，永久可用</p>
+          <p className="text-lg muted max-w-2xl mx-auto">
+            黑白极简 · 透明结算 · 一次购买，永久可用
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="flex items-start gap-3 py-5">
-              <div className="mt-1 text-neutral-900 dark:text-neutral-100">
-                <IconSparkles width={20} height={20} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="hover-lift group">
+            <CardContent className="flex items-start gap-4 py-6">
+              <div className="mt-1 text-neutral-900 dark:text-neutral-100 group-hover:scale-110 transition-transform duration-200">
+                <IconSparkles width={24} height={24} />
               </div>
               <div>
-                <div className="font-medium">体验优秀</div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                <div className="font-semibold text-base">体验优秀</div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">
                   极简设计，聚焦内容与学习效率。
                 </p>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="flex items-start gap-3 py-5">
-              <div className="mt-1 text-neutral-900 dark:text-neutral-100">
-                <IconShield width={20} height={20} />
+          <Card className="hover-lift group">
+            <CardContent className="flex items-start gap-4 py-6">
+              <div className="mt-1 text-neutral-900 dark:text-neutral-100 group-hover:scale-110 transition-transform duration-200">
+                <IconShield width={24} height={24} />
               </div>
               <div>
-                <div className="font-medium">链上可信</div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                <div className="font-semibold text-base">链上可信</div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">
                   购买凭证上链，所有权一目了然。
                 </p>
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="flex items-start gap-3 py-5">
-              <div className="mt-1 text-neutral-900 dark:text-neutral-100">
-                <IconZap width={20} height={20} />
+          <Card className="hover-lift group">
+            <CardContent className="flex items-start gap-4 py-6">
+              <div className="mt-1 text-neutral-900 dark:text-neutral-100 group-hover:scale-110 transition-transform duration-200">
+                <IconZap width={24} height={24} />
               </div>
               <div>
-                <div className="font-medium">快捷支付</div>
-                <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                <div className="font-semibold text-base">快捷支付</div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">
                   一键授权与购买，流畅无阻。
                 </p>
               </div>
