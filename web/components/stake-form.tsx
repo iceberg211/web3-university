@@ -127,13 +127,14 @@ export default function StakeForm() {
     }
   }, [ethAmount]);
 
+  const tokenDecimals = tokenBal.data?.decimals ?? currentToken.decimals;
   const parsedToken = useMemo(() => {
     try {
-      return parseUnits(tokenAmount || "0", currentToken.decimals);
+      return parseUnits(tokenAmount || "0", tokenDecimals);
     } catch {
       return undefined;
     }
-  }, [tokenAmount, currentToken.decimals]);
+  }, [tokenAmount, tokenDecimals]);
 
   const exceedsEth = useMemo(() => {
     if (!parsedEth || !ethBal.data?.value) return false;
@@ -259,15 +260,16 @@ export default function StakeForm() {
 
   const supplyToken = async () => {
     if (!parsedToken || parsedToken === 0n) return;
+    if (!address) return;
     try {
       await supplyTx.writeTx({
         address: pool as `0x${string}`,
         abi: AaveV3PoolAbi,
-        functionName: "deposit",
+        functionName: "supply",
         args: [
           currentTokenAddress as `0x${string}`,
           parsedToken,
-          (address as `0x${string}`) || (currentTokenAddress as `0x${string}`),
+          address as `0x${string}`,
           0,
         ],
       });
@@ -353,7 +355,7 @@ export default function StakeForm() {
               <Button
                 key={tokenKey}
                 size="sm"
-                variant={selectedToken === tokenKey ? "default" : "secondary"}
+                variant={selectedToken === tokenKey ? "primary" : "secondary"}
                 onClick={() => setSelectedToken(tokenKey)}
                 className="min-w-16"
               >
@@ -562,14 +564,14 @@ export default function StakeForm() {
           {supplyCap && totalAToken && (
             <div className="text-xs text-neutral-600 bg-neutral-50 p-2 rounded">
               供应上限：
-              {Number(formatUnits(supplyCap, currentToken.decimals)).toFixed(0)}{" "}
+              {Number(formatUnits(supplyCap, tokenDecimals)).toFixed(0)}{" "}
               {currentToken.symbol} | 已使用：
-              {Number(formatUnits(totalAToken, currentToken.decimals)).toFixed(
+              {Number(formatUnits(totalAToken, tokenDecimals)).toFixed(
                 2
               )}{" "}
               {currentToken.symbol} | 可用：
               {Number(
-                formatUnits(supplyCap - totalAToken, currentToken.decimals)
+                formatUnits(supplyCap - totalAToken, tokenDecimals)
               ).toFixed(2)}{" "}
               {currentToken.symbol}
             </div>
@@ -597,9 +599,7 @@ export default function StakeForm() {
                 variant="secondary"
                 onClick={() =>
                   setTokenAmount(
-                    tokenBal.data
-                      ? Number(tokenBal.data.formatted).toFixed(6)
-                      : "0"
+                    tokenBal.data ? (tokenBal.data.formatted as string) : "0"
                   )
                 }
               >
@@ -609,18 +609,15 @@ export default function StakeForm() {
             {!parsedToken && (
               <div className="mt-1 text-xs text-red-600">请输入有效的数量</div>
             )}
-            {exceedsToken && (
+            {/* {exceedsToken && (
               <div className="mt-1 text-xs text-red-600">余额不足</div>
-            )}
+            )} */}
             {exceedsSupplyCap && (
               <div className="mt-1 text-xs text-red-600">
                 超出 Aave 协议供应上限，当前可存入：
                 {supplyCap && totalAToken
                   ? Number(
-                      formatUnits(
-                        supplyCap - totalAToken,
-                        currentToken.decimals
-                      )
+                      formatUnits(supplyCap - totalAToken, tokenDecimals)
                     ).toFixed(6)
                   : "0"}{" "}
                 {currentToken.symbol}
@@ -630,7 +627,7 @@ export default function StakeForm() {
 
           <div className="flex gap-2 items-center">
             <Button
-              variant={needsApproval ? "secondary" : "outline"}
+              variant={needsApproval ? "secondary" : "ghost"}
               onClick={approveToken}
               disabled={disableApprove || !needsApproval}
               className={needsApproval ? "" : "text-green-600 border-green-200 bg-green-50"}
