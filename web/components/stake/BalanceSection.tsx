@@ -41,9 +41,7 @@ export default function BalanceSection({
             : tokenBalance.isError
             ? "读取失败"
             : tokenBalance.data
-            ? `${Number(tokenBalance.data.formatted).toFixed(4)} ${
-                tokenBalance.data.symbol || currentToken.symbol
-              }`
+            ? `${Number(tokenBalance.data.formatted).toFixed(4)} ${currentToken.symbol}`
             : "加载中..."
         }
       />
@@ -53,9 +51,7 @@ export default function BalanceSection({
           aTokenBalance.isError
             ? "读取失败"
             : aTokenBalance.data
-            ? `${Number(aTokenBalance.data.formatted).toFixed(4)} ${
-                aTokenBalance.data.symbol || `a${currentToken.symbol}`
-              }`
+            ? `${Number(aTokenBalance.data.formatted).toFixed(4)} a${currentToken.symbol}`
             : "0.0000"
         }
         className={

@@ -21,6 +21,8 @@ interface AaveSectionProps {
     available: string;
   };
   needsApproval: boolean;
+  isApproved?: boolean;
+  canCheck?: boolean;
   approveTx: any;
   supplyTx: any;
   onApprove: () => void;
@@ -39,6 +41,8 @@ export default function AaveSection({
   exceedsSupplyCap,
   supplyCapInfo,
   needsApproval,
+  isApproved,
+  canCheck,
   approveTx,
   supplyTx,
   onApprove,
@@ -108,14 +112,24 @@ export default function AaveSection({
       {/* Action buttons */}
       <div className="flex gap-2 items-center">
         <Button
-          variant={needsApproval ? "secondary" : "outline"}
+          variant={needsApproval ? "secondary" : isApproved ? "outline" : "secondary"}
           onClick={onApprove}
-          disabled={disableApprove || !needsApproval}
-          className={needsApproval ? "" : "text-green-600 border-green-200 bg-green-50"}
+          disabled={disableApprove || (canCheck && !needsApproval)}
+          className={
+            needsApproval
+              ? ""
+              : isApproved
+              ? "text-green-600 border-green-200 bg-green-50"
+              : ""
+          }
         >
-          {needsApproval
-            ? `授权 ${currentToken.symbol}`
-            : `✓ 已授权 ${currentToken.symbol}`}
+          {canCheck
+            ? needsApproval
+              ? `授权 ${currentToken.symbol}`
+              : isApproved
+              ? `✓ 已授权 ${currentToken.symbol}`
+              : `授权 ${currentToken.symbol}`
+            : `授权 ${currentToken.symbol}`}
         </Button>
         <Button onClick={onSupply} disabled={disableSupply}>
           存入 Aave

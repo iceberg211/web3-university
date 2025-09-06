@@ -33,8 +33,14 @@ export function useAllowance({
   });
 
   const allowance = (allowanceQuery.data as bigint | undefined) ?? undefined;
-  const needsApproval = Boolean(amount !== undefined && allowance !== undefined && amount > allowance);
+  // Only consider approval state when we have a positive amount to check
+  const canCheck = Boolean(amount !== undefined && amount > 0n && valid);
+  const isApproved = Boolean(
+    canCheck && allowance !== undefined && amount !== undefined && amount <= allowance
+  );
+  const needsApproval = Boolean(
+    canCheck && allowance !== undefined && amount !== undefined && amount > allowance
+  );
 
-  return { allowanceQuery, allowance, needsApproval } as const;
+  return { allowanceQuery, allowance, canCheck, isApproved, needsApproval } as const;
 }
-

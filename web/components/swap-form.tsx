@@ -84,7 +84,7 @@ export default function SwapForm() {
   }, [payAmount, direction, isDirectionChanging]);
 
   // 读取 YD allowance（当 YD -> ETH 时需要授权）
-  const { allowanceQuery, needsApproval } = useAllowance({
+  const { allowanceQuery, needsApproval, isApproved, canCheck } = useAllowance({
     token: addresses.YDToken as `0x${string}`,
     spender: addresses.MockSwap as `0x${string}`,
     amount: direction === "YD_TO_ETH" ? parsedPay : undefined,
@@ -408,13 +408,26 @@ export default function SwapForm() {
         </div>
 
         <div className="flex gap-2 items-center">
-          {needsApproval && (
+          {direction === "YD_TO_ETH" && (
             <Button
-              variant="secondary"
+              variant={needsApproval ? "secondary" : isApproved ? "outline" : "secondary"}
               onClick={approveIfNeeded}
-              disabled={actionDisabled || isDirectionChanging}
+              disabled={!needsApproval || actionDisabled || isDirectionChanging}
+              className={
+                needsApproval
+                  ? ""
+                  : isApproved
+                  ? "text-green-600 border-green-200 bg-green-50"
+                  : ""
+              }
             >
-              授权 {paySymbol}
+              {canCheck
+                ? needsApproval
+                  ? `授权 ${paySymbol}`
+                  : isApproved
+                  ? `✓ 已授权 ${paySymbol}`
+                  : `授权 ${paySymbol}`
+                : `授权 ${paySymbol}`}
             </Button>
           )}
           <Button

@@ -11,15 +11,17 @@ interface TokenSelectorProps {
 }
 
 export default function TokenSelector({ selectedToken, onTokenSelect }: TokenSelectorProps) {
+  const tokenKeys = Object.keys(TOKENS) as TokenKey[];
+  
   return (
     <div className="space-y-2">
       <Label>选择代币</Label>
       <div className="flex gap-2">
-        {(Object.keys(TOKENS) as TokenKey[]).map((tokenKey) => (
+        {tokenKeys.map((tokenKey) => (
           <Button
             key={tokenKey}
             size="sm"
-            variant={selectedToken === tokenKey ? "default" : "secondary"}
+            variant={selectedToken === tokenKey ? "secondary" : "default"}
             onClick={() => onTokenSelect(tokenKey)}
             className="min-w-16"
           >

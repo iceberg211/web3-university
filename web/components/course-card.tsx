@@ -25,11 +25,11 @@ export default function CourseCard({
     address: addresses.Courses as `0x${string}`,
     abi: abis.Courses,
     functionName: "hasPurchased",
-    args: [idHex, address ?? "0x0000000000000000000000000000000000000000"],
-    query: { enabled: !!address },
+    args: [idHex, address ?? ("0x0000000000000000000000000000000000000000" as `0x${string}`)],
+    query: { enabled: true },
   });
 
-  const ownedFlag = Boolean(owned.data);
+  const ownedFlag = owned.isSuccess && owned.data === true;
   return (
     <Card className="flex flex-col hover-lift group h-full">
       <CardHeader className="space-y-3">

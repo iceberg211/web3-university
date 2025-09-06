@@ -28,6 +28,16 @@ export default function StakeForm() {
   const [selectedToken, setSelectedToken] = useState<TokenKey>("USDT");
   const currentToken = TOKENS[selectedToken];
 
+  // Handle token selection with state reset
+  const handleTokenSelect = (token: TokenKey) => {
+    if (token === selectedToken) return;
+    
+    setSelectedToken(token);
+    // Reset input amounts when switching tokens
+    setEthAmount("0.01");
+    setTokenAmount("");
+  };
+
   // Address management with persistence
   const { 
     router, weth, usdt, link, wbtc, pool, 
@@ -112,6 +122,13 @@ export default function StakeForm() {
     }
   }, [aaveOps.supplyTx.isSuccess]);
 
+  // Refresh balances when token changes
+  useEffect(() => {
+    if (address && isValidTokenAddress) {
+      balances.refetchAll();
+    }
+  }, [selectedToken, currentTokenAddress, address, isValidTokenAddress]);
+
   // Final disable conditions
   const disableSwap = swapOps.disableSwap || !addressesValid || !isConnected;
   const disableApprove = aaveOps.disableApprove || exceedsToken || !isConnected;
@@ -127,7 +144,7 @@ export default function StakeForm() {
         {/* Token Selection */}
         <TokenSelector
           selectedToken={selectedToken}
-          onTokenSelect={setSelectedToken}
+          onTokenSelect={handleTokenSelect}
         />
 
         {/* Contract Addresses Configuration */}
@@ -251,6 +268,8 @@ export default function StakeForm() {
           exceedsSupplyCap={aaveOps.exceedsSupplyCap}
           supplyCapInfo={aaveOps.supplyCapInfo}
           needsApproval={aaveOps.needsApproval}
+          isApproved={aaveOps.isApproved}
+          canCheck={aaveOps.canCheck}
           approveTx={aaveOps.approveTx}
           supplyTx={aaveOps.supplyTx}
           onApprove={aaveOps.approveToken}

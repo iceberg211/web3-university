@@ -46,7 +46,7 @@ export function useAaveOperations(
   );
 
   // Allowance check
-  const { needsApproval, allowanceQuery } = useAllowance({
+  const { needsApproval, isApproved, canCheck, allowanceQuery } = useAllowance({
     token: isAddress(currentTokenAddress as `0x${string}`)
       ? (currentTokenAddress as `0x${string}`)
       : undefined,
@@ -155,6 +155,8 @@ export function useAaveOperations(
     // States
     parsedToken,
     needsApproval,
+    isApproved,
+    canCheck,
     exceedsSupplyCap,
     supplyCap,
     totalAToken,
