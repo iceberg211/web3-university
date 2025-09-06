@@ -13,6 +13,9 @@ export const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7" as const; // 6 
 // Ref: https://docs.aave.com/developers/deployed-contracts/v3-mainnet/ethereum
 export const AAVE_V3_POOL = "0x87870Bca3F3aDeeBC1344f9D58D9FfA9c93E8B5c" as const;
 
+// Aave V3 Protocol Data Provider (Sepolia testnet)
+export const AAVE_V3_PROTOCOL_DATA_PROVIDER_SEPOLIA = "0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654" as const;
+
 // ABIs (minimal fragments)
 export const UniswapV2RouterAbi = [
   {
@@ -59,7 +62,8 @@ export const Erc20Abi = [
   },
 ] as const;
 
-export const AavePoolAbi = [
+// Aave V3 Pool ABI (minimal fragments for supply/withdraw)
+export const AaveV3PoolAbi = [
   {
     name: "supply",
     type: "function",
@@ -73,6 +77,61 @@ export const AavePoolAbi = [
     outputs: [],
   },
   {
+    name: "deposit",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "asset", type: "address" },
+      { name: "amount", type: "uint256" },
+      { name: "onBehalfOf", type: "address" },
+      { name: "referralCode", type: "uint16" },
+    ],
+    outputs: [],
+  },
+  {
+    name: "withdraw",
+    type: "function",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "asset", type: "address" },
+      { name: "amount", type: "uint256" },
+      { name: "to", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "getUserAccountData",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "user", type: "address" },
+    ],
+    outputs: [
+      { name: "totalCollateralBase", type: "uint256" },
+      { name: "totalDebtBase", type: "uint256" },
+      { name: "availableBorrowsBase", type: "uint256" },
+      { name: "currentLiquidationThreshold", type: "uint256" },
+      { name: "ltv", type: "uint256" },
+      { name: "healthFactor", type: "uint256" },
+    ],
+  },
+] as const;
+
+// Aave V3 Protocol Data Provider ABI (minimal fragments for caps checking)
+export const AaveV3ProtocolDataProviderAbi = [
+  {
+    name: "getReserveCaps",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "asset", type: "address" },
+    ],
+    outputs: [
+      { name: "borrowCap", type: "uint256" },
+      { name: "supplyCap", type: "uint256" },
+    ],
+  },
+  {
     name: "getReserveData",
     type: "function",
     stateMutability: "view",
@@ -80,27 +139,18 @@ export const AavePoolAbi = [
       { name: "asset", type: "address" },
     ],
     outputs: [
-      {
-        name: "",
-        type: "tuple",
-        components: [
-          { name: "configuration", type: "uint256" },
-          { name: "liquidityIndex", type: "uint128" },
-          { name: "currentLiquidityRate", type: "uint128" },
-          { name: "variableBorrowIndex", type: "uint128" },
-          { name: "currentVariableBorrowRate", type: "uint128" },
-          { name: "currentStableBorrowRate", type: "uint128" },
-          { name: "lastUpdateTimestamp", type: "uint40" },
-          { name: "id", type: "uint16" },
-          { name: "aTokenAddress", type: "address" },
-          { name: "stableDebtTokenAddress", type: "address" },
-          { name: "variableDebtTokenAddress", type: "address" },
-          { name: "interestRateStrategyAddress", type: "address" },
-          { name: "accruedToTreasury", type: "uint128" },
-          { name: "unbacked", type: "uint128" },
-          { name: "isolationModeTotalDebt", type: "uint128" },
-        ],
-      },
+      { name: "unbacked", type: "uint256" },
+      { name: "accruedToTreasuryScaled", type: "uint256" },
+      { name: "totalAToken", type: "uint256" },
+      { name: "totalStableDebt", type: "uint256" },
+      { name: "totalVariableDebt", type: "uint256" },
+      { name: "liquidityRate", type: "uint256" },
+      { name: "variableBorrowRate", type: "uint256" },
+      { name: "stableBorrowRate", type: "uint256" },
+      { name: "averageStableBorrowRate", type: "uint256" },
+      { name: "liquidityIndex", type: "uint256" },
+      { name: "variableBorrowIndex", type: "uint256" },
+      { name: "lastUpdateTimestamp", type: "uint40" },
     ],
   },
 ] as const;

@@ -9,6 +9,8 @@
     "deploy:sepolia": "hardhat run scripts/deploy.ts --network sepolia",
     "deploy:courses": "hardhat run scripts/deploy-courses.ts --network localhost",
     "deploy:courses:sepolia": "hardhat run scripts/deploy-courses.ts --network sepolia",
+    "deploy:stake": "hardhat run scripts/deploy-stake.ts --network localhost",
+    "deploy:stake:sepolia": "hardhat run scripts/deploy-stake.ts --network sepolia",
     "node": "hardhat node",
     "export-abi": "ts-node scripts/export-abi.ts",
     "sync-web": "ts-node scripts/sync-web.ts"

@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from "fs";
 import path from "path";
 
 async function main() {
-  const names = ["YDToken", "MockSwap", "Courses"];
+  const names = ["YDToken", "MockSwap", "Courses", "SimpleUSDTStaking"];
   const outDir = path.join(__dirname, "..", "exports");
   mkdirSync(outDir, { recursive: true });
   const abis: Record<string, any> = {};
@@ -19,4 +19,3 @@ main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-
