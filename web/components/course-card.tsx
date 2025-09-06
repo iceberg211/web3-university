@@ -50,9 +50,15 @@ export default function CourseCard({
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 flex-1">
-        <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-3 leading-relaxed">
-          {summary}
-        </p>
+        {ownedFlag ? (
+          <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-3 leading-relaxed">
+            {summary}
+          </p>
+        ) : (
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            购买后解锁课程简介和内容
+          </p>
+        )}
         <div className="mt-auto">
           <Link href={`/course/${encodeURIComponent(id)}`} className="block">
             <Button size="md" className="w-full">

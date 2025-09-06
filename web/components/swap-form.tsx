@@ -72,7 +72,7 @@ export default function SwapForm() {
     if (isDirectionChanging || !payAmount || payAmount === "") {
       return undefined;
     }
-    
+
     try {
       if (direction === "ETH_TO_YD") {
         return parseEther(payAmount);
@@ -116,10 +116,10 @@ export default function SwapForm() {
   // Max 按钮：为 ETH 预留gas，增加更安全的处理
   const onMax = () => {
     if (isDirectionChanging || !payBalance) return;
-    
+
     const bal = payBalance;
     let max = bal;
-    
+
     if (direction === "ETH_TO_YD") {
       // 为 ETH 交易预留 gas 费用
       max = bal > GAS_BUFFER_WEI ? bal - GAS_BUFFER_WEI : 0n;
@@ -173,6 +173,19 @@ export default function SwapForm() {
 
   // needsApproval 已通过 useAllowance 提供
 
+  // 当授权成功时刷新 allowance
+  useEffect(() => {
+    if (isSuccess && txHash) {
+      // 延迟刷新，确保链上状态已更新
+      const timer = setTimeout(() => {
+        allowanceQuery.refetch?.();
+        ydBal.refetch?.();
+        ethBal.refetch?.();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, txHash, allowanceQuery, ydBal, ethBal]);
+
   // 当切换方向时的处理
   useEffect(() => {
     if (isDirectionChanging) {
@@ -223,11 +236,11 @@ export default function SwapForm() {
   // 优化的方向切换函数
   const switchTo = (newDirection: Direction) => {
     if (newDirection === direction) return;
-    
+
     // 批量更新状态，避免中间状态
     setIsDirectionChanging(true);
     setDirection(newDirection);
-    
+
     // 立即清空输入，避免显示错误的解析结果
     setPayAmount("");
   };
@@ -292,13 +305,17 @@ export default function SwapForm() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => switchTo(direction === "ETH_TO_YD" ? "YD_TO_ETH" : "ETH_TO_YD")}
+            onClick={() =>
+              switchTo(direction === "ETH_TO_YD" ? "YD_TO_ETH" : "ETH_TO_YD")
+            }
             disabled={isDirectionChanging}
             className="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200"
           >
-            <div className={`transition-transform duration-300 ${
-              isDirectionChanging ? 'rotate-180' : 'rotate-0'
-            }`}>
+            <div
+              className={`transition-transform duration-300 ${
+                isDirectionChanging ? "rotate-180" : "rotate-0"
+              }`}
+            >
               ⇅
             </div>
           </Button>
@@ -306,11 +323,15 @@ export default function SwapForm() {
 
         <div className="space-y-2">
           <Label>支付</Label>
-          <div className={`rounded-lg border p-3 transition-all duration-200 ${
-            isDirectionChanging ? 'opacity-70' : 'opacity-100'
-          }`}>
+          <div
+            className={`rounded-lg border p-3 transition-all duration-200 ${
+              isDirectionChanging ? "opacity-70" : "opacity-100"
+            }`}
+          >
             <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-neutral-600 font-medium">{paySymbol}</div>
+              <div className="text-sm text-neutral-600 font-medium">
+                {paySymbol}
+              </div>
               <div className="text-xs text-neutral-500">
                 余额：{Number(payBalanceFmt || 0).toFixed(6)}
               </div>
@@ -323,9 +344,9 @@ export default function SwapForm() {
                 disabled={isDirectionChanging}
                 placeholder={isDirectionChanging ? "切换中..." : "输入金额"}
               />
-              <Button 
-                size="sm" 
-                variant="secondary" 
+              <Button
+                size="sm"
+                variant="secondary"
                 onClick={onMax}
                 disabled={isDirectionChanging || !payBalance}
               >
@@ -343,18 +364,27 @@ export default function SwapForm() {
 
         <div className="space-y-2">
           <Label>可得</Label>
-          <div className={`rounded-lg border p-3 transition-all duration-200 ${
-            isDirectionChanging ? 'opacity-70' : 'opacity-100'
-          }`}>
+          <div
+            className={`rounded-lg border p-3 transition-all duration-200 ${
+              isDirectionChanging ? "opacity-70" : "opacity-100"
+            }`}
+          >
             <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-neutral-600 font-medium">{receiveSymbol}</div>
+              <div className="text-sm text-neutral-600 font-medium">
+                {receiveSymbol}
+              </div>
               <div className="text-xs text-neutral-500">
-                预计：{isDirectionChanging ? "计算中..." : Number(estReceiveFmt || 0).toFixed(6)}
+                预计：
+                {isDirectionChanging
+                  ? "计算中..."
+                  : Number(estReceiveFmt || 0).toFixed(6)}
               </div>
             </div>
             <div className="text-sm text-neutral-500">
               最小可得（滑点{(SLIPPAGE_BPS / 100).toFixed(2)}%）：
-              {isDirectionChanging ? "计算中..." : `${Number(minReceiveFmt || 0).toFixed(6)} ${receiveSymbol}`}
+              {isDirectionChanging
+                ? "计算中..."
+                : `${Number(minReceiveFmt || 0).toFixed(6)} ${receiveSymbol}`}
             </div>
           </div>
         </div>
@@ -387,8 +417,8 @@ export default function SwapForm() {
               授权 {paySymbol}
             </Button>
           )}
-          <Button 
-            onClick={doSwap} 
+          <Button
+            onClick={doSwap}
             disabled={actionDisabled || needsApproval || isDirectionChanging}
             className="flex-1"
           >

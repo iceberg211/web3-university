@@ -75,7 +75,6 @@ export default function CourseDetail() {
             <article className="prose">
               <p>欢迎回来！你已购买本课程。</p>
               <p>{course.summary}</p>
-              <p>这里展示课程内容（存储在 Web2/localStorage）。</p>
             </article>
           )}
         </CardContent>

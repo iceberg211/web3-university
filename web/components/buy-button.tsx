@@ -33,7 +33,7 @@ export default function BuyButton({
   const hasAllowance = useMemo(() => !needsApproval, [needsApproval]);
 
   // 使用 onSuccess 钩子响应交易确认：
-  // - 若为 approve：刷新 allowance，使“购买课程”按钮立刻可用
+  // - 若为 approve：刷新 allowance，使"购买课程"按钮立刻可用
   // - 若为 buy：广播事件，刷新课程页面的购买状态
   const receipt = useWaitForTransactionReceipt({
     hash,
@@ -49,6 +49,17 @@ export default function BuyButton({
       }
     },
   });
+
+  // 当交易成功时重置 lastActionRef，避免状态混淆
+  useEffect(() => {
+    if (receipt.isSuccess && lastActionRef.current === "approve") {
+      // 延迟重置，确保 allowance 已刷新
+      const timer = setTimeout(() => {
+        lastActionRef.current = null;
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [receipt.isSuccess]);
 
   const approve = () => {
     lastActionRef.current = "approve";
