@@ -24,34 +24,57 @@ export default function BuyButton({
   const price = parseUnits(priceYD, 18);
 
   // 通用 allowance hook
-  const { needsApproval, allowanceQuery } = useAllowance({
+  const { needsApproval, allowance, allowanceQuery } = useAllowance({
     token: addresses.YDToken as `0x${string}`,
     spender: addresses.Courses as `0x${string}`,
     amount: price,
     enabled: !!address,
   });
-  const hasAllowance = useMemo(() => !needsApproval, [needsApproval]);
+  
+  // 修复授权状态判断逻辑
+  const hasAllowance = useMemo(() => {
+    if (allowance === undefined) {
+      // 数据还在加载中，默认认为没有授权
+      return false;
+    }
+    const sufficient = allowance >= price;
+    console.log("BuyButton - allowance check:", {
+      allowance: allowance.toString(),
+      price: price.toString(),
+      sufficient,
+      needsApproval
+    });
+    return sufficient;
+  }, [allowance, price, needsApproval]);
 
-  // 使用 onSuccess 钩子响应交易确认：
-  // - 若为 approve：刷新 allowance，使“购买课程”按钮立刻可用
-  // - 若为 buy：广播事件，刷新课程页面的购买状态
+  // 监听交易状态
   const receipt = useWaitForTransactionReceipt({
     hash,
-    onSuccess: () => {
+  });
+
+  // 使用 useEffect 监听交易成功事件
+  useEffect(() => {
+    if (receipt.isSuccess && hash) {
       if (lastActionRef.current === "approve") {
-        allowanceQuery.refetch?.();
+        console.log("授权交易成功，刷新 allowance");
+        // 延迟一点刷新，确保链上状态已更新
+        setTimeout(() => {
+          allowanceQuery.refetch?.();
+        }, 1000);
       } else if (lastActionRef.current === "buy" && !firedRef.current) {
         firedRef.current = true;
+        console.log("购买交易成功，广播事件");
         try {
           if (typeof window !== "undefined")
             window.dispatchEvent(new CustomEvent("course:purchased", { detail: id }));
         } catch {}
       }
-    },
-  });
+    }
+  }, [receipt.isSuccess, hash, lastActionRef.current, allowanceQuery, id]);
 
   const approve = () => {
     lastActionRef.current = "approve";
+    firedRef.current = false; // 重置事件触发标志
     writeContract({
       address: addresses.YDToken as `0x${string}`,
       abi: abis.YDToken,
@@ -62,6 +85,7 @@ export default function BuyButton({
 
   const buy = () => {
     lastActionRef.current = "buy";
+    firedRef.current = false; // 重置事件触发标志
     writeContract({
       address: addresses.Courses as `0x${string}`,
       abi: abis.Courses,
@@ -79,8 +103,13 @@ export default function BuyButton({
 
   return (
     <div className="flex gap-2 items-center">
-      <Button variant="secondary" onClick={approve} disabled={isPending}>
-        授权
+      <Button 
+        variant={hasAllowance ? "outline" : "secondary"}
+        onClick={approve} 
+        disabled={isPending || hasAllowance}
+        className={hasAllowance ? "text-green-600 border-green-200 bg-green-50" : ""}
+      >
+        {hasAllowance ? "✓ 已授权" : "授权"}
       </Button>
       <Button onClick={buy} disabled={isPending || !hasAllowance}>
         购买课程
@@ -90,7 +119,7 @@ export default function BuyButton({
       {receipt.isSuccess && (
         <span>{lastActionRef.current === "buy" ? "已购买！" : "已授权！"}</span>
       )}
-      {!hasAllowance && (
+      {!hasAllowance && allowance !== undefined && (
         <span className="text-xs text-orange-600">需先授权给合约才能购买</span>
       )}
       {error && <span className="text-red-600">{error.message}</span>}

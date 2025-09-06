@@ -84,12 +84,19 @@ export default function SwapForm() {
   }, [payAmount, direction, isDirectionChanging]);
 
   // 读取 YD allowance（当 YD -> ETH 时需要授权）
-  const { allowanceQuery, needsApproval } = useAllowance({
+  const { allowanceQuery, allowance, needsApproval } = useAllowance({
     token: addresses.YDToken as `0x${string}`,
     spender: addresses.MockSwap as `0x${string}`,
     amount: direction === "YD_TO_ETH" ? parsedPay : undefined,
     enabled: direction === "YD_TO_ETH" && !!address && parsedPay !== undefined,
   });
+
+  // 计算是否有足够的授权
+  const hasAllowance = useMemo(() => {
+    if (direction === "ETH_TO_YD") return true; // ETH 转 YD 不需要授权
+    if (allowance === undefined || !parsedPay) return false;
+    return allowance >= parsedPay;
+  }, [direction, allowance, parsedPay]);
 
   const payBalance =
     direction === "ETH_TO_YD" ? ethBal.data?.value : ydBal.data?.value;
@@ -181,6 +188,21 @@ export default function SwapForm() {
       setIsDirectionChanging(false);
     }
   }, [isDirectionChanging]);
+
+  // 监听交易成功，刷新余额和授权状态
+  useEffect(() => {
+    if (isSuccess && txHash) {
+      
+      // 延迟刷新，确保链上状态已更新
+      setTimeout(() => {
+        ethBal.refetch?.();
+        ydBal.refetch?.();
+        if (direction === "YD_TO_ETH") {
+          allowanceQuery.refetch?.();
+        }
+      }, 1000);
+    }
+  }, [isSuccess, txHash, ethBal, ydBal, direction, allowanceQuery]);
 
   const paySymbol =
     direction === "ETH_TO_YD"
@@ -378,23 +400,31 @@ export default function SwapForm() {
         </div>
 
         <div className="flex gap-2 items-center">
-          {needsApproval && (
+          {direction === "YD_TO_ETH" && (
             <Button
-              variant="secondary"
+              variant={hasAllowance ? "outline" : "secondary"}
               onClick={approveIfNeeded}
-              disabled={actionDisabled || isDirectionChanging}
+              disabled={actionDisabled || isDirectionChanging || hasAllowance}
+              className={hasAllowance ? "text-green-600 border-green-200 bg-green-50" : ""}
             >
-              授权 {paySymbol}
+              {hasAllowance ? "✓ 已授权" : `授权 ${paySymbol}`}
             </Button>
           )}
           <Button 
             onClick={doSwap} 
-            disabled={actionDisabled || needsApproval || isDirectionChanging}
+            disabled={actionDisabled || !hasAllowance || isDirectionChanging}
             className="flex-1"
           >
             {isDirectionChanging ? "切换中..." : "兑换"}
           </Button>
         </div>
+
+        {/* 授权提示信息 */}
+        {direction === "YD_TO_ETH" && !hasAllowance && allowance !== undefined && (
+          <div className="text-xs text-orange-600 text-center">
+            需要先授权 {paySymbol} 给合约才能兑换
+          </div>
+        )}
 
         <TxStatus
           {...{
