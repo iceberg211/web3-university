@@ -410,23 +410,15 @@ export default function SwapForm() {
         <div className="flex gap-2 items-center">
           {direction === "YD_TO_ETH" && (
             <Button
-              variant={needsApproval ? "secondary" : isApproved ? "outline" : "secondary"}
+              variant={!canCheck ? "secondary" : isApproved ? "outline" : "secondary"}
               onClick={approveIfNeeded}
-              disabled={!needsApproval || actionDisabled || isDirectionChanging}
-              className={
-                needsApproval
-                  ? ""
-                  : isApproved
-                  ? "text-green-600 border-green-200 bg-green-50"
-                  : ""
-              }
+              disabled={actionDisabled || isDirectionChanging || !canCheck || !!isApproved}
+              className={isApproved ? "text-green-600 border-green-200 bg-green-50" : ""}
             >
-              {canCheck
-                ? needsApproval
-                  ? `授权 ${paySymbol}`
-                  : isApproved
-                  ? `✓ 已授权 ${paySymbol}`
-                  : `授权 ${paySymbol}`
+              {!canCheck
+                ? `授权 ${paySymbol}`
+                : isApproved
+                ? `✓ 已授权 ${paySymbol}`
                 : `授权 ${paySymbol}`}
             </Button>
           )}
