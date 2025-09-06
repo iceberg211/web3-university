@@ -11,7 +11,6 @@ import {
 } from "@/hooks/useStake";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useSwapOperations } from "@/hooks/useSwapOperations";
-import { useAaveOperations } from "@/hooks/useAaveOperations";
 
 // UI Components
 import TokenSelector from "@/components/stake/TokenSelector";
@@ -80,13 +79,6 @@ export default function StakeForm() {
     setWeth
   );
 
-  const aaveOps = useAaveOperations(
-    address,
-    selectedToken,
-    currentTokenAddress,
-    tokenAmount,
-    pool
-  );
 
   // Computed validations
   const addressesValid = useMemo(() =>
@@ -97,30 +89,18 @@ export default function StakeForm() {
   );
 
   const isValidTokenAddress = isAddress(currentTokenAddress as `0x${string}`);
-  const exceedsToken = aaveOps.parsedToken && balances.tokenBalance.data?.value
-    ? aaveOps.parsedToken > balances.tokenBalance.data.value
-    : false;
 
   // Effects for balance refresh
   useEffect(() => {
     if (swapOps.swapTx.isSuccess) {
-      balances.refetchAll();
+      // small delay to ensure RPC reflects latest state
+      const t = setTimeout(() => {
+        balances.refetchAll();
+      }, 1000);
+      return () => clearTimeout(t);
     }
   }, [swapOps.swapTx.isSuccess]);
 
-  useEffect(() => {
-    if (aaveOps.approveTx.isSuccess) {
-      aaveOps.allowanceQuery.refetch?.();
-    }
-  }, [aaveOps.approveTx.isSuccess]);
-
-  useEffect(() => {
-    if (aaveOps.supplyTx.isSuccess) {
-      balances.refetchToken();
-      balances.refetchAToken();
-      aaveOps.allowanceQuery.refetch?.();
-    }
-  }, [aaveOps.supplyTx.isSuccess]);
 
   // Refresh balances when token changes
   useEffect(() => {
@@ -131,8 +111,6 @@ export default function StakeForm() {
 
   // Final disable conditions
   const disableSwap = swapOps.disableSwap || !addressesValid || !isConnected;
-  const disableApprove = aaveOps.disableApprove || exceedsToken || !isConnected;
-  const disableSupply = aaveOps.disableSupply || exceedsToken || !isConnected;
 
   return (
     <Card className="max-w-lg">
@@ -263,19 +241,8 @@ export default function StakeForm() {
           tokenAmount={tokenAmount}
           onTokenAmountChange={setTokenAmount}
           tokenBalance={balances.tokenBalance}
-          parsedToken={aaveOps.parsedToken}
-          exceedsToken={exceedsToken}
-          exceedsSupplyCap={aaveOps.exceedsSupplyCap}
-          supplyCapInfo={aaveOps.supplyCapInfo}
-          needsApproval={aaveOps.needsApproval}
-          isApproved={aaveOps.isApproved}
-          canCheck={aaveOps.canCheck}
-          approveTx={aaveOps.approveTx}
-          supplyTx={aaveOps.supplyTx}
-          onApprove={aaveOps.approveToken}
-          onSupply={aaveOps.supplyToken}
-          disableApprove={disableApprove}
-          disableSupply={disableSupply}
+          currentTokenAddress={currentTokenAddress}
+          pool={pool}
         />
 
       </CardContent>

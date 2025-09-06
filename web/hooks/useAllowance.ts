@@ -1,7 +1,7 @@
 "use client";
 import { useAccount, useReadContract } from "wagmi";
 import { isAddress } from "viem";
-import { Erc20Abi } from "@/lib/defi";
+import { AaveV3PoolAbi } from "@/lib/defi";
 
 export function useAllowance({
   token,
@@ -23,7 +23,7 @@ export function useAllowance({
   );
   const allowanceQuery = useReadContract({
     address: (token || "0x0000000000000000000000000000000000000000") as `0x${string}`,
-    abi: Erc20Abi,
+    abi: AaveV3PoolAbi,
     functionName: "allowance",
     args: [
       (ownerAddr || "0x0000000000000000000000000000000000000000") as `0x${string}`,

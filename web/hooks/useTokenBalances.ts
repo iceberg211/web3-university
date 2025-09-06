@@ -1,7 +1,8 @@
 "use client";
-import { useBalance } from "wagmi";
+import { useBalance, useReadContract } from "wagmi";
 import { isAddress } from "viem";
-import { TOKENS } from "./useStake";
+import { DEFAULTS, TOKENS } from "./useStake";
+import { AaveV3ProtocolDataProviderAbi } from "@/lib/defi";
 
 export function useTokenBalances(
   address: `0x${string}` | undefined,
@@ -25,12 +26,25 @@ export function useTokenBalances(
     },
   });
 
-  // aToken balance (staked amount)
+  // Resolve aToken address via Protocol Data Provider when possible
+  const reserveTokens = useReadContract({
+    address: DEFAULTS.protocolDataProvider as `0x${string}`,
+    abi: AaveV3ProtocolDataProviderAbi,
+    functionName: "getReserveTokensAddresses",
+    args: [currentTokenAddress as `0x${string}`],
+    query: {
+      enabled: isAddress(currentTokenAddress as `0x${string}`),
+    },
+  });
+  const dynamicAToken = (reserveTokens.data?.[0] as `0x${string}` | undefined) ?? undefined;
+
+  // aToken balance (staked amount) — prefer dynamic aToken, fallback to preset
+  const aTokenToUse = (dynamicAToken || (currentToken.aTokenAddress as `0x${string}`)) as `0x${string}`;
   const aTokenBalance = useBalance({
     address,
-    token: currentToken.aTokenAddress as `0x${string}`,
+    token: aTokenToUse,
     query: {
-      enabled: !!address && isAddress(currentToken.aTokenAddress as `0x${string}`),
+      enabled: !!address && isAddress(aTokenToUse as `0x${string}`),
     },
   });
 

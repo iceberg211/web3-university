@@ -17,29 +17,7 @@ export const AAVE_V3_POOL = "0x87870Bca3F3aDeeBC1344f9D58D9FfA9c93E8B5c" as cons
 export const AAVE_V3_PROTOCOL_DATA_PROVIDER_SEPOLIA = "0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654" as const;
 
 // ABIs (minimal fragments)
-export const UniswapV2RouterAbi = [
-  {
-    name: "swapExactETHForTokens",
-    type: "function",
-    stateMutability: "payable",
-    inputs: [
-      { name: "amountOutMin", type: "uint256" },
-      { name: "path", type: "address[]" },
-      { name: "to", type: "address" },
-      { name: "deadline", type: "uint256" },
-    ],
-    outputs: [{ name: "amounts", type: "uint256[]" }],
-  },
-  {
-    name: "WETH",
-    type: "function",
-    stateMutability: "view",
-    inputs: [],
-    outputs: [{ name: "", type: "address" }],
-  },
-] as const;
-
-export const Erc20Abi = [
+export const ERC20Abi = [
   {
     name: "approve",
     type: "function",
@@ -59,6 +37,37 @@ export const Erc20Abi = [
       { name: "spender", type: "address" },
     ],
     outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "balanceOf",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "account", type: "address" },
+    ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+] as const;
+
+export const UniswapV2RouterAbi = [
+  {
+    name: "swapExactETHForTokens",
+    type: "function",
+    stateMutability: "payable",
+    inputs: [
+      { name: "amountOutMin", type: "uint256" },
+      { name: "path", type: "address[]" },
+      { name: "to", type: "address" },
+      { name: "deadline", type: "uint256" },
+    ],
+    outputs: [{ name: "amounts", type: "uint256[]" }],
+  },
+  {
+    name: "WETH",
+    type: "function",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
   },
 ] as const;
 
@@ -103,9 +112,7 @@ export const AaveV3PoolAbi = [
     name: "getUserAccountData",
     type: "function",
     stateMutability: "view",
-    inputs: [
-      { name: "user", type: "address" },
-    ],
+    inputs: [{ name: "user", type: "address" }],
     outputs: [
       { name: "totalCollateralBase", type: "uint256" },
       { name: "totalDebtBase", type: "uint256" },
@@ -119,6 +126,19 @@ export const AaveV3PoolAbi = [
 
 // Aave V3 Protocol Data Provider ABI (minimal fragments for caps checking)
 export const AaveV3ProtocolDataProviderAbi = [
+  {
+    name: "getReserveTokensAddresses",
+    type: "function",
+    stateMutability: "view",
+    inputs: [
+      { name: "asset", type: "address" },
+    ],
+    outputs: [
+      { name: "aTokenAddress", type: "address" },
+      { name: "stableDebtTokenAddress", type: "address" },
+      { name: "variableDebtTokenAddress", type: "address" },
+    ],
+  },
   {
     name: "getReserveCaps",
     type: "function",

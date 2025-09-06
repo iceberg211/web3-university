@@ -8,7 +8,6 @@ import { useCodePresent } from "./useStake";
 import { 
   AaveV3PoolAbi, 
   AaveV3ProtocolDataProviderAbi, 
-  Erc20Abi 
 } from "@/lib/defi";
 import { DEFAULTS } from "./useStake";
 import { TOKENS } from "./useStake";
@@ -98,7 +97,7 @@ export function useAaveOperations(
     try {
       await approveTx.writeTx({
         address: currentTokenAddress as `0x${string}`,
-        abi: Erc20Abi,
+        abi: AaveV3PoolAbi,
         functionName: "approve",
         args: [pool as `0x${string}`, parsedToken],
       });
